@@ -1,0 +1,12 @@
+﻿  scattering.cpp
+C:\Users\GY\Documents\opencv\build\include\opencv2/core/mat.hpp(1965): warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
+C:\Users\GY\Documents\opencv\build\include\opencv2/core/persistence.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
+C:\Users\GY\Documents\opencv\build\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
+C:\Users\GY\Documents\opencv\build\include\opencv2/core/utility.hpp : warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
+scattering.cpp(435): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+scattering.cpp(436): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+scattering.cpp(437): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  Generating code
+  All 283 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  scatter.vcxproj -> C:\Users\GY\gyDocuments\LeetCode\volumeRayTrace\scatter\x64\Release\scatter.exe
