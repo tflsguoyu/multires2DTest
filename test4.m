@@ -61,7 +61,7 @@ function test
         axis off
         title(['std:' num2str(std_d(flag)) ' samples: ' num2str(sigmaT_resolution/windowsize) ' by ' num2str(sigmaT_resolution/windowsize)]);
         
-        
+        % fft_d = computeFFT(sigmaT_d);
         fft_d = log(abs(fftshift(fft2(sigmaT_d)))+1);
         fft_mean_d(flag) = mean(fft_d(:));
 
