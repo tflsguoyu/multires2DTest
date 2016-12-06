@@ -110,9 +110,14 @@ int main(int argc, char *argv[]) {
 			x[0] = x[0] - t * w[0]; x[1] = x[1] - t * w[1];
 
 			if (x[1] > 1.0) {
-				//reflectance += weight / sigmaT_d_NN[r][c];
-				reflectance += weight;
-				break;
+				double intersectP_x = x[0] + (1 - x[1]) * w[0] / w[1];
+				if (intersectP_x > 0 && intersectP_x < 1) {
+					//reflectance += weight / sigmaT_d_NN[r][c];
+					reflectance += weight;
+					break;
+				}
+				else
+					break;
 			}
 			else if (x[0] < 0.0 || x[0] > 1.0 || x[1] < 0.0)
 				break;

@@ -46,11 +46,11 @@ function test
         
         %% scattering    
         sigmaT_filename = 'output/sigmaTDownSample.csv';
-        albedo = 0.95;
+        albedo = 1;
         N = 1000000;
         
         % MATLAB 
-%         computeDensityMap(sigmaT_filename,albedo,N);
+%         computeDensityMap(sigmaT_filename);
         
         % C++ windows
         system(['scatter.exe ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
@@ -100,12 +100,15 @@ function test
     
 end
 
-function computeDensityMap(filename_sigmaT_D,albedo,N_Sample)
+function computeDensityMap(filename_sigmaT_D)
 
     sigmaT_d_NN = csvread(filename_sigmaT_D);  
     h_sigmaT_d = size(sigmaT_d_NN,1);
     w_sigmaT_d = size(sigmaT_d_NN,2);
-       
+    
+    albedo = 0.95;        
+    N_Sample = 100000;
+    
     mapSize = 32;
     reflectance = 0;
     densityMap = zeros(mapSize,mapSize);
