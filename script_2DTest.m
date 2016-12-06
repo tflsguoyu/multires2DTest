@@ -4,7 +4,7 @@ function test
     format long
    
     %% Load SigmaT
-    sigmaT = csvread('input/sigmaT1111.csv');    
+    sigmaT = csvread('input/sigmaT333.csv');    
     sigmaT_size = size(sigmaT,1);
     
     %% down sample
@@ -52,8 +52,11 @@ function test
         % MATLAB 
 %         computeDensityMap(sigmaT_filename);
         
-        % C++
-        system(['scatter.exe ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
+        % C++ windows
+%         system(['scatter.exe ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
+        
+        % C++ Linux
+        system(['./scatter_linux ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
         
         
         densityMap = csvread('output/densityMap.csv');

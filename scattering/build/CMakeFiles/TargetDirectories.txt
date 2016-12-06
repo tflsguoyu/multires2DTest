@@ -1,1 +1,1 @@
-/home/tflsguoyu/Documents/multires2DTest/scattering/build/CMakeFiles/scattering.dir
+/home/tflsguoyu/Documents/multires2DTest/scattering/build/CMakeFiles/scatter_linux.dir

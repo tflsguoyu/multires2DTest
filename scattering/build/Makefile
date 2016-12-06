@@ -99,24 +99,24 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named scattering
+# Target rules for targets named scatter_linux
 
 # Build rule for target.
-scattering: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 scattering
-.PHONY : scattering
+scatter_linux: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 scatter_linux
+.PHONY : scatter_linux
 
 # fast build rule for target.
-scattering/fast:
-	$(MAKE) -f CMakeFiles/scattering.dir/build.make CMakeFiles/scattering.dir/build
-.PHONY : scattering/fast
+scatter_linux/fast:
+	$(MAKE) -f CMakeFiles/scatter_linux.dir/build.make CMakeFiles/scatter_linux.dir/build
+.PHONY : scatter_linux/fast
 
 scattering.o: scattering.cpp.o
 .PHONY : scattering.o
 
 # target to build an object file
 scattering.cpp.o:
-	$(MAKE) -f CMakeFiles/scattering.dir/build.make CMakeFiles/scattering.dir/scattering.cpp.o
+	$(MAKE) -f CMakeFiles/scatter_linux.dir/build.make CMakeFiles/scatter_linux.dir/scattering.cpp.o
 .PHONY : scattering.cpp.o
 
 scattering.i: scattering.cpp.i
@@ -124,7 +124,7 @@ scattering.i: scattering.cpp.i
 
 # target to preprocess a source file
 scattering.cpp.i:
-	$(MAKE) -f CMakeFiles/scattering.dir/build.make CMakeFiles/scattering.dir/scattering.cpp.i
+	$(MAKE) -f CMakeFiles/scatter_linux.dir/build.make CMakeFiles/scatter_linux.dir/scattering.cpp.i
 .PHONY : scattering.cpp.i
 
 scattering.s: scattering.cpp.s
@@ -132,7 +132,7 @@ scattering.s: scattering.cpp.s
 
 # target to generate assembly for a file
 scattering.cpp.s:
-	$(MAKE) -f CMakeFiles/scattering.dir/build.make CMakeFiles/scattering.dir/scattering.cpp.s
+	$(MAKE) -f CMakeFiles/scatter_linux.dir/build.make CMakeFiles/scatter_linux.dir/scattering.cpp.s
 .PHONY : scattering.cpp.s
 
 # Help Target
@@ -143,7 +143,7 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... scattering"
+	@echo "... scatter_linux"
 	@echo "... scattering.o"
 	@echo "... scattering.i"
 	@echo "... scattering.s"

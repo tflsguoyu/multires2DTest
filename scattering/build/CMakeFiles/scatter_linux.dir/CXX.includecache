@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/tflsguoyu/Documents/multires2DTest/scattering/scattering.cpp
+stdio.h
+-
+stdlib.h
+-
+iostream
+-
+fstream
+-
+sstream
+-
+string
+-
+cmath
+-
+random
+-
+vector
+-
+omp.h
+-
+

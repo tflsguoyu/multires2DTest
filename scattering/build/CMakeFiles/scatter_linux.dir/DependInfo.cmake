@@ -4,7 +4,7 @@ SET(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 SET(CMAKE_DEPENDS_CHECK_CXX
-  "/home/tflsguoyu/Documents/multires2DTest/scattering/scattering.cpp" "/home/tflsguoyu/Documents/multires2DTest/scattering/build/CMakeFiles/scattering.dir/scattering.cpp.o"
+  "/home/tflsguoyu/Documents/multires2DTest/scattering/scattering.cpp" "/home/tflsguoyu/Documents/multires2DTest/scattering/build/CMakeFiles/scatter_linux.dir/scattering.cpp.o"
   )
 SET(CMAKE_CXX_COMPILER_ID "GNU")
 

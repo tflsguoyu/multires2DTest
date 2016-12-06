@@ -116,7 +116,7 @@ CMAKE_OBJCOPY:FILEPATH=/usr/bin/objcopy
 CMAKE_OBJDUMP:FILEPATH=/usr/bin/objdump
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=scattering
+CMAKE_PROJECT_NAME:STATIC=scatter_linux
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -188,10 +188,10 @@ OpenCV_LIB_DIR_DBG:PATH=
 OpenCV_LIB_DIR_OPT:PATH=
 
 //Value Computed by CMake
-scattering_BINARY_DIR:STATIC=/home/tflsguoyu/Documents/multires2DTest/scattering/build
+scatter_linux_BINARY_DIR:STATIC=/home/tflsguoyu/Documents/multires2DTest/scattering/build
 
 //Value Computed by CMake
-scattering_SOURCE_DIR:STATIC=/home/tflsguoyu/Documents/multires2DTest/scattering
+scatter_linux_SOURCE_DIR:STATIC=/home/tflsguoyu/Documents/multires2DTest/scattering
 
 
 ########################

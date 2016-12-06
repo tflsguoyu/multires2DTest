@@ -53,38 +53,38 @@ CMAKE_SOURCE_DIR = /home/tflsguoyu/Documents/multires2DTest/scattering
 CMAKE_BINARY_DIR = /home/tflsguoyu/Documents/multires2DTest/scattering/build
 
 #=============================================================================
-# Target rules for target CMakeFiles/scattering.dir
+# Target rules for target CMakeFiles/scatter_linux.dir
 
 # All Build rule for target.
-CMakeFiles/scattering.dir/all:
-	$(MAKE) -f CMakeFiles/scattering.dir/build.make CMakeFiles/scattering.dir/depend
-	$(MAKE) -f CMakeFiles/scattering.dir/build.make CMakeFiles/scattering.dir/build
+CMakeFiles/scatter_linux.dir/all:
+	$(MAKE) -f CMakeFiles/scatter_linux.dir/build.make CMakeFiles/scatter_linux.dir/depend
+	$(MAKE) -f CMakeFiles/scatter_linux.dir/build.make CMakeFiles/scatter_linux.dir/build
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/tflsguoyu/Documents/multires2DTest/scattering/build/CMakeFiles  1
-	@echo "Built target scattering"
-.PHONY : CMakeFiles/scattering.dir/all
+	@echo "Built target scatter_linux"
+.PHONY : CMakeFiles/scatter_linux.dir/all
 
 # Include target in all.
-all: CMakeFiles/scattering.dir/all
+all: CMakeFiles/scatter_linux.dir/all
 .PHONY : all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/scattering.dir/rule: cmake_check_build_system
+CMakeFiles/scatter_linux.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/tflsguoyu/Documents/multires2DTest/scattering/build/CMakeFiles 1
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/scattering.dir/all
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/scatter_linux.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/tflsguoyu/Documents/multires2DTest/scattering/build/CMakeFiles 0
-.PHONY : CMakeFiles/scattering.dir/rule
+.PHONY : CMakeFiles/scatter_linux.dir/rule
 
 # Convenience name for target.
-scattering: CMakeFiles/scattering.dir/rule
-.PHONY : scattering
+scatter_linux: CMakeFiles/scatter_linux.dir/rule
+.PHONY : scatter_linux
 
 # clean rule for target.
-CMakeFiles/scattering.dir/clean:
-	$(MAKE) -f CMakeFiles/scattering.dir/build.make CMakeFiles/scattering.dir/clean
-.PHONY : CMakeFiles/scattering.dir/clean
+CMakeFiles/scatter_linux.dir/clean:
+	$(MAKE) -f CMakeFiles/scatter_linux.dir/build.make CMakeFiles/scatter_linux.dir/clean
+.PHONY : CMakeFiles/scatter_linux.dir/clean
 
 # clean rule for target.
-clean: CMakeFiles/scattering.dir/clean
+clean: CMakeFiles/scatter_linux.dir/clean
 .PHONY : clean
 
 #=============================================================================
