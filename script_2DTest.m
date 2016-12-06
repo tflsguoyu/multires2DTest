@@ -1,31 +1,32 @@
 function test
     clear
     close all
+    format long
    
     %% Load SigmaT
-    sigmaT = csvread('sigmaT3.csv');
-    
+    sigmaT = csvread('input/sigmaT1111.csv');    
     sigmaT_size = size(sigmaT,1);
     
     %% down sample
-    windowsizeList = [1,2,5];
+    downScale = [1,2,5,10,20,40];
+    N_downScale = length(downScale);
     figure;
     flag = 0;
-    for windowsize = windowsizeList
+    for windowsize = downScale
         
         flag = flag + 1
         
-        %% down sampling sigmaT
-        window = ones(windowsize,windowsize)/(windowsize*windowsize);
-        sigmaT_d_NN = conv2(sigmaT,window,'valid');
-        sigmaT_d_NN = sigmaT_d_NN(1:windowsize:end,1:windowsize:end);
-        csvwrite('sigmaTDownSample.csv',sigmaT_d_NN);
+        %% down sampling sigmaT    
+        sigmaT_d_NN = imresize(imresize(sigmaT,1/windowsize,'box'),windowsize,'box');
+%         sigmaT_d_NN = imresize(imresize(sigmaT,1/windowsize),windowsize);
+        
+        csvwrite('output/sigmaTDownSample.csv', sigmaT_d_NN);
         
         %% std of sigmaT
         std_d(flag) = std(sigmaT_d_NN(:));
         
-        subplot(3,6,flag);
-        imagesc(sigmaT_d_NN,[0 6])
+        subplot(3,N_downScale,flag);
+        imagesc(sigmaT_d_NN, [0 6])
         colorbar
         axis equal
         axis off
@@ -35,37 +36,47 @@ function test
         [fft_log_NN, fft_x(flag)] = computeFFT(sigmaT_d_NN);
         N = size(fft_log_NN,1);
         
-        subplot(3,6,flag+6)
-        imagesc(fft_log_NN,[0 12]);
+        subplot(3,N_downScale,flag+N_downScale)
+        imagesc(fft_log_NN);
         colorbar;hold on;
-        rectangle('Position',[N*(1-fft_x(flag))/2 N*(1-fft_x(flag))/2 N*fft_x(flag) N*fft_x(flag)],'EdgeColor','w');hold off;
+        rectangle('Position',[N*(1-fft_x(flag))/2 N*(1-fft_x(flag))/2 N*fft_x(flag)+1 N*fft_x(flag)+1],'EdgeColor','w');hold off;
         axis equal
         axis off
         title(['fft:' num2str(fft_x(flag))])
         
         %% scattering    
-    
-        computeDensityMap('sigmaTDownSample.csv');
-        densityMap = csvread('densityMap.csv');
+        sigmaT_filename = 'output/sigmaTDownSample.csv';
+        albedo = 0.95;
+        N = 1000000;
+        
+        % MATLAB 
+%         computeDensityMap(sigmaT_filename);
+        
+        % C++
+        system(['scatter.exe ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
+        
+        
+        densityMap = csvread('output/densityMap.csv');
+        ref(flag) = csvread('output/reflectance.csv');
 
 
         
         %% display densityMap
-        densityMap = log(densityMap+1);
-        densityMean(flag) = mean(densityMap(:));
-        subplot(3,6,flag+12)
+%         densityMap = log(densityMap+1);
+%         densityMean(flag) = sum(densityMap(:));
+        subplot(3,N_downScale,flag+N_downScale*2)
         imagesc(densityMap)
         colorbar
         axis equal
         axis off      
-        title(['mean:' num2str(densityMean(flag))])
+        title(['reflectance:' num2str(ref(flag))])
     end
     
     %% Draw curve
     figure;
 
     subplot(2,2,1);
-    plot(windowsizeList,std_d,'*-');
+    plot(downScale,std_d,'*-');
     xlabel('downsampleScale');
     ylabel('std');
 
@@ -75,72 +86,75 @@ function test
     ylabel('fft');
 
     subplot(2,2,3);
-    plot(std_d,densityMean,'*-');
+    plot(std_d,ref,'*-');
     xlabel('std');
     ylabel('bright');
 
     subplot(2,2,4);
-    plot(fft_x,densityMean,'*-');
+    plot(fft_x,ref,'*-');
     xlabel('fft');
     ylabel('bright');
     
 end
 
-
 function computeDensityMap(filename_sigmaT_D)
 
-    sigmaT_d_NN = csvread(filename_sigmaT_D);
-
-    maxDepth = 1000;
-    x = zeros(maxDepth, 2);
-    w = zeros(maxDepth, 2);
-    y = [];
-    weight = zeros(maxDepth,1);
-
-    N_Sample = 20000;
+    sigmaT_d_NN = csvread(filename_sigmaT_D);  
+    h_sigmaT_d = size(sigmaT_d_NN,1);
+    w_sigmaT_d = size(sigmaT_d_NN,2);
+    
+    albedo = 0.95;        
+    N_Sample = 100000;
+    
+    mapSize = 32;
+    reflectance = 0;
+    densityMap = zeros(mapSize,mapSize);
+    
     for samples = 1: N_Sample
 
-        x(1,:) = [rand,1];
-        w(1,:) = [0,1];
-        w(2:end,:) = [];
-        x(2:end,:) = [];
+        maxDepth = 1000;        
+        x = [rand,1];
+        w = [0,1];       
 
-        albedo = 0.95;
-        weight(1,1) = 1/N_Sample * albedo;
-        weight(2:end,:) = [];
+        [r,c] = getCoord(x(1),x(2),h_sigmaT_d,w_sigmaT_d);
+        weight = 1/N_Sample;
 
-        for dep = 1 : maxDepth - 1
-            c = round((1-x(dep,2))*size(sigmaT_d_NN,1));
-            r = round(x(dep,1)*size(sigmaT_d_NN,2));
-            c(c==0)=1;r(r==0)=1;
-            t = -log(rand)/sigmaT_d_NN(c,r);
-            x1 = x(dep, :) - t*w(dep, :);
+        for dep = 1 : maxDepth
+                  
+            t = -log(rand)/sigmaT_d_NN(r,c);
+            x = x - t * w;
             
-            if x1(1) < 0.0 || x1(1) > 1.0 || x1(2) < 0.0 || x1(2) > 1.0
-                y = [y; [x(1:dep-1,:) weight(1:dep-1,1)]];
+            if x(2) > 1.0
+                reflectance = reflectance + weight;
+%                 reflectance = reflectance + weight/sigmaT_d_NN(r,c);
+                break;
+            elseif x(1) < 0.0 || x(1) > 1.0 || x(2) < 0.0
                 break;
             end
             
             theta = 2*pi*rand;
-            w(dep + 1,:) = [cos(theta),sin(theta)];
-            x(dep + 1,:) = x1;
-            weight(dep + 1,1) = weight(dep,1)*albedo;
+            w = [cos(theta),sin(theta)];
+            weight = weight * albedo;
+
+            [r,c] = getCoord(x(1),x(2),h_sigmaT_d,w_sigmaT_d);
+            [row,col] = getCoord(x(1),x(2),mapSize,mapSize);
+    
+            densityMap(row,col) = densityMap(row,col) + weight/sigmaT_d_NN(r,c);
+%             densityMap(row,col) = densityMap(row,col) + weight;
+            
         end
         
     end
-
-    % density map
-    mapSize = 32;
-    densityMap = zeros(mapSize,mapSize);
-    for i = 1: size(y,1)
-        c = round((1-y(i,2))*mapSize);
-        r = round(y(i,1)*mapSize);
-        c(c==0)=1;r(r==0)=1;
-        densityMap(c, r) = densityMap(c, r) + y(i,3)/sigmaT_d_NN(c,r);
-    end
-
-    csvwrite('densityMap.csv',densityMap);
     
+    csvwrite('output/reflectance.csv',reflectance);
+    csvwrite('output/densityMap.csv',densityMap);
+    
+end
+
+function [r,c] = getCoord(x,y,H,W)
+    r = ceil((1-y)*H);
+    c = ceil(x*W);
+    r(r==0)=1;c(c==0)=1;
 end
 
 function [fft_log_NN,x] = computeFFT(img_NN)
@@ -153,12 +167,12 @@ function [fft_log_NN,x] = computeFFT(img_NN)
     x_end = 1;
     R = 0.95;
     err=1;
-    while(err>0.01)
+    while(err>0.001 && (x_end-x_start)>0.001)
         
         x = (x_start+x_end)/2;
         M = N*x;
 
-        fft_sub_MM = fft_NN(round(N*(1-x)/2):round(N*(1+x)/2), round(N*(1-x)/2):round(N*(1+x)/2)); 
+        fft_sub_MM = fft_NN(round(N*(1-x)/2):round(N*(1+x)/2)+1, round(N*(1-x)/2):round(N*(1+x)/2)+1); 
 
         E_all = sum(fft_NN(:));
         E_sub = sum(fft_sub_MM(:));

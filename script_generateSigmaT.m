@@ -8,30 +8,33 @@ sigmaT_resolution = 320;
 %     sigmaT = rand(sigmaT_resolution,sigmaT_resolution)*6;
 
 %%
-    sigmaT = zeros(sigmaT_resolution,sigmaT_resolution);
-    ii = 6;
-    for i = 1:sigmaT_resolution
-       if(ii<0)
-        ii = 6;
-       end
-        sigmaT(i,:) = ii;
-        ii = ii-0.5;       
-    end
+%     sigmaT = zeros(sigmaT_resolution,sigmaT_resolution);
+%     ii = 6;
+%     step = 1;
+%     for i = 1:step:sigmaT_resolution
+%        if(ii<0.2)
+%         ii = 6;
+%        end
+%         sigmaT(i:i+step-1,:) = ii;
+%         ii = ii-0.2;       
+%     end
+%     sigmaT = sigmaT(1:sigmaT_resolution, 1:sigmaT_resolution);
 %     sigmaT = imrotate(sigmaT,90);
 
 %%
-% sigmaT = zeros(round(sqrt(2)*sigmaT_resolution),round(sqrt(2)*sigmaT_resolution));
-% ii = 6;
-% for i = 1:size(sigmaT,1)
-%    if(ii<0.5)
-%     ii = 6;
-%    end
-%     sigmaT(i,:) = ii;
-%     ii = ii-0.5;       
-% end
-% sigmaT = imrotate(sigmaT,45);
-% startP = round((size(sigmaT,1)-sigmaT_resolution)/2);
-% sigmaT = sigmaT(startP:startP+sigmaT_resolution-1,startP:startP+sigmaT_resolution-1);
+sigmaT = zeros(round(sqrt(2)*sigmaT_resolution),round(sqrt(2)*sigmaT_resolution));
+ii = 6;
+step = 4;
+for i = 1:step:size(sigmaT,1)
+   if(ii<0.2)
+    ii = 6;
+   end
+    sigmaT(i:i+step-1,:) = ii;
+    ii = ii-0.2;       
+end
+sigmaT = imrotate(sigmaT,45);
+startP = round((size(sigmaT,1)-sigmaT_resolution)/2);
+sigmaT = sigmaT(startP:startP+sigmaT_resolution-1,startP:startP+sigmaT_resolution-1);
 
 %%
-csvwrite('sigmaT1.csv',sigmaT);
+csvwrite('input/sigmaT3333.csv',sigmaT);
