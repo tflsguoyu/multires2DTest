@@ -100,11 +100,18 @@ int main(int argc, char *argv[]) {
 		double w[2] = { 0.0,1.0 };
 
 		int r, c;
-		getCoord(x[0], x[1], h_sigmaT_d, w_sigmaT_d, r, c);
+		int row, col;
+		//getCoord(x[0], x[1], h_sigmaT_d, w_sigmaT_d, r, c);
 
 		double weight = 1.0 / N_Sample;
 
 		for (int dep = 1; dep < maxDepth; dep++) {
+
+			getCoord(x[0], x[1], h_sigmaT_d, w_sigmaT_d, r, c);
+			getCoord(x[0], x[1], mapSize, mapSize, row, col);
+
+			densityMap[row][col] += weight / sigmaT_d_NN[r][c];
+			//densityMap[row][col] += weight;
 
 			double t = -log(rng()) / sigmaT_d_NN[r][c];
 			x[0] = x[0] - t * w[0]; x[1] = x[1] - t * w[1];
@@ -125,13 +132,6 @@ int main(int argc, char *argv[]) {
 			double theta = 2.0 * PI * rng();
 			w[0] = cos(theta); w[1] = sin(theta);
 			weight *= albedo;
-
-			getCoord(x[0], x[1], h_sigmaT_d, w_sigmaT_d, r, c);
-
-			int row, col;
-			getCoord(x[0], x[1], mapSize, mapSize, row, col);
-
-			densityMap[row][col] += weight / sigmaT_d_NN[r][c];
 
 		}
 	}

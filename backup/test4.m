@@ -80,7 +80,7 @@ function test
         y = [];
         weight = zeros(maxDepth,1);
 
-        N_Sample = 20000;
+        N_Sample = 10000;
         for samples = 1: N_Sample
             
             x(1,:) = [rand,1];

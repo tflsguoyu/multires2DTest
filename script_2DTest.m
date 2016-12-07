@@ -4,7 +4,7 @@ function test
     format long
    
     %% Load SigmaT
-    sigmaT = csvread('input/sigmaT11.csv');    
+    sigmaT = csvread('input/sigmaT_binary11111.csv');    
     sigmaT_size = size(sigmaT,1);
     
     %% down sample
@@ -17,9 +17,12 @@ function test
         flag = flag + 1
         
         %% down sampling sigmaT    
+        % method 1:
         sigmaT_d_NN = imresize(imresize(sigmaT,1/windowsize,'box'),windowsize,'box');
 %         sigmaT_d_NN = imresize(imresize(sigmaT,1/windowsize),windowsize);
         
+        % method 2:
+
         csvwrite('output/sigmaTDownSample.csv', sigmaT_d_NN);
         
         %% std of sigmaT
@@ -60,19 +63,20 @@ function test
         
         
         densityMap = csvread('output/densityMap.csv');
-        ref(flag) = csvread('output/reflectance.csv');
+        reflection(flag) = csvread('output/reflectance.csv');
 
 
         
         %% display densityMap
-%         densityMap = log(densityMap+1);
+        densityMap = log(densityMap);
 %         densityMean(flag) = sum(densityMap(:));
+
         subplot(3,N_downScale,flag+N_downScale*2)
-        imagesc(densityMap)
+        imagesc(densityMap, [-10 -5])
         colorbar
         axis equal
         axis off      
-        title(['reflectance:' num2str(ref(flag))])
+        title(['reflectance:' num2str(reflection(flag))])
     end
     
     %% Draw curve
@@ -89,12 +93,12 @@ function test
     ylabel('fft');
 
     subplot(2,2,3);
-    plot(std_d,ref,'*-');
+    plot(std_d,reflection,'*-');
     xlabel('std');
     ylabel('bright');
 
     subplot(2,2,4);
-    plot(fft_x,ref,'*-');
+    plot(fft_x,reflection,'*-');
     xlabel('fft');
     ylabel('bright');
     
@@ -116,11 +120,17 @@ function computeDensityMap(filename_sigmaT_D,albedo,N_Sample)
         x = [rand,1];
         w = [0,1];       
 
-        [r,c] = getCoord(x(1),x(2),h_sigmaT_d,w_sigmaT_d);
+%         [r,c] = getCoord(x(1),x(2),h_sigmaT_d,w_sigmaT_d);
         weight = 1/N_Sample;
 
         for dep = 1 : maxDepth
-                  
+ 
+            [r,c] = getCoord(x(1),x(2),h_sigmaT_d,w_sigmaT_d);
+            [row,col] = getCoord(x(1),x(2),mapSize,mapSize);
+    
+            densityMap(row,col) = densityMap(row,col) + weight/sigmaT_d_NN(r,c);
+%             densityMap(row,col) = densityMap(row,col) + weight;
+            
             t = -log(rand)/sigmaT_d_NN(r,c);
             x = x - t * w;
             
@@ -140,12 +150,6 @@ function computeDensityMap(filename_sigmaT_D,albedo,N_Sample)
             theta = 2*pi*rand;
             w = [cos(theta),sin(theta)];
             weight = weight * albedo;
-
-            [r,c] = getCoord(x(1),x(2),h_sigmaT_d,w_sigmaT_d);
-            [row,col] = getCoord(x(1),x(2),mapSize,mapSize);
-    
-            densityMap(row,col) = densityMap(row,col) + weight/sigmaT_d_NN(r,c);
-%             densityMap(row,col) = densityMap(row,col) + weight;
             
         end
         

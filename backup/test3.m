@@ -54,10 +54,11 @@ function test
     flag = 0;
     for windowsize = windowsizeList
         flag = flag + 1
-        window = ones(windowsize,windowsize)/(windowsize*windowsize);
-        sigmaT_d = conv2(sigmaT,window,'valid');
-        sigmaT_d = sigmaT_d(1:windowsize:end,1:windowsize:end);
+%         window = ones(windowsize,windowsize)/(windowsize*windowsize);
+%         sigmaT_d = conv2(sigmaT,window,'valid');
+%         sigmaT_d = sigmaT_d(1:windowsize:end,1:windowsize:end);
 
+        sigmaT_d = imresize(imresize(sigmaT,1/windowsize),windowsize,'box');
 
         subplot(3,4,flag);
         imagesc(sigmaT_d)
@@ -69,10 +70,10 @@ function test
     %%    
         y = [];
 
-        for samples = 1: 200000
+        for samples = 1: 10000
             
-            x(1,:) = [rand/2+0.25,1];
-            w(1,:) = [cos(1.8),sin(1.8)];
+            x(1,:) = [rand,1];
+            w(1,:) = [0,1];
             w(2:end,:) = [];
             x(2:end,:) = [];
 
@@ -94,7 +95,7 @@ function test
         end
 
         % density map
-        mapSize = 100;
+        mapSize = 32;
         densityMap = zeros(mapSize,mapSize);
         for i = 1: size(y,1)
             c = round((1-y(i,2))*mapSize);
@@ -110,7 +111,7 @@ function test
         axis equal
         axis off
         
-        densityMap = log(densityMap);
+        densityMap = log(densityMap+1);
         subplot(3,4,flag+8)
         imagesc(densityMap)
         colorbar
