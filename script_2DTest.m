@@ -1,14 +1,16 @@
 function test
     clear
     close all
-    format long
+%     format long
    
     %% Load SigmaT
-    sigmaT = csvread('input/sigmaT_binary11111.csv');    
+    sigmaT = csvread('input/sigmaT222.csv');  
+    scale = 1;
+    sigmaT = scale * sigmaT;
     sigmaT_size = size(sigmaT,1);
     
     %% down sample
-    downScale = [1,2,5,10,20,40];
+    downScale = [1,2,4,8,16,32];
     N_downScale = length(downScale);
     figure;
     flag = 0;
@@ -21,7 +23,6 @@ function test
         sigmaT_d_NN = imresize(imresize(sigmaT,1/windowsize,'box'),windowsize,'box');
 %         sigmaT_d_NN = imresize(imresize(sigmaT,1/windowsize),windowsize);
         
-        % method 2:
 
         csvwrite('output/sigmaTDownSample.csv', sigmaT_d_NN);
         
@@ -33,39 +34,78 @@ function test
         colorbar
         axis equal
         axis off
-        title(['std:' num2str(std_d(flag)) ' samples: ' num2str(sigmaT_size/windowsize) ' by ' num2str(sigmaT_size/windowsize)]);
+        title(['std:' num2str(std_d(flag))]);
                 
         %% fft of sigmaT
-        [fft_log_NN, fft_x(flag)] = computeFFT(sigmaT_d_NN);
+        [fft_log_NN, fft_window_list, fft_Ratio_list] = computeFFT(sigmaT_d_NN);
+        diff_fft_window_list = diff(fft_window_list);
+        idx = find(diff_fft_window_list);
+        fft_Ratio(flag) = fft_Ratio_list(idx(1));
+        fft_window(flag) = fft_window_list(fft_Ratio_list==0.9);
         N = size(fft_log_NN,1);
         
+%         subplot(3,N_downScale,flag+N_downScale)
+%         imagesc(fft_log_NN);
+%         colorbar;hold on;
+%         rectangle('Position',[N*(1-fft_x(flag))/2 N*(1-fft_x(flag))/2 N*fft_x(flag)+1 N*fft_x(flag)+1],'EdgeColor','w');hold off;
+%         axis equal
+%         axis off
+%         title(['fft:' num2str(fft_x(flag))])
+
         subplot(3,N_downScale,flag+N_downScale)
-        imagesc(fft_log_NN);
-        colorbar;hold on;
-        rectangle('Position',[N*(1-fft_x(flag))/2 N*(1-fft_x(flag))/2 N*fft_x(flag)+1 N*fft_x(flag)+1],'EdgeColor','w');hold off;
-        axis equal
-        axis off
-        title(['fft:' num2str(fft_x(flag))])
+        plot(fft_Ratio_list, fft_window_list, '+-');
+        xlabel('Ratio');
+        ylabel('windowSize');
         
         %% scattering    
         sigmaT_filename = 'output/sigmaTDownSample.csv';
-        albedo = 0.95;
-        N = 1000000;
+        N = 2000000;
+        if flag == 1
+            albedo = 0.96;
         
-        % MATLAB 
-%         computeDensityMap(sigmaT_filename,albedo,N);
-        
-        % C++ windows
-        system(['scatter.exe ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
-        
-        % C++ Linux
-%         system(['./scatter_linux ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
-        
-        
-        densityMap = csvread('output/densityMap.csv');
-        reflection(flag) = csvread('output/reflectance.csv');
+            % MATLAB 
+    %         computeDensityMap(sigmaT_filename,albedo,N);
+            % C++ windows
+            system(['scatter.exe ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
+            % C++ Linux
+    %         system(['./scatter_linux ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
+            densityMap = csvread('output/densityMap.csv');
+            reflection(flag) = csvread('output/reflectance.csv');
+            albedo_adjust(flag) = albedo;
 
+        else
+            albedo_start = albedo-0.1;
+            albedo_end = albedo;
+            
+            while 1
+                albedo_tmp = (albedo_start+albedo_end)/2;
+                
+                % MATLAB 
+        %         computeDensityMap(sigmaT_filename,albedo,N);
+                % C++ windows
+                system(['scatter.exe ' sigmaT_filename ' ' num2str(albedo_tmp) ' ' num2str(N)]);
+                % C++ Linux
+        %         system(['./scatter_linux ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
+                reflection_tmp = csvread('output/reflectance.csv');
 
+                err = reflection_tmp - reflection(1);
+                if abs(err) < 0.0001 || (albedo_end - albedo_start) < 0.0000001
+                    break;
+                end
+    
+                if err < 0 
+                    albedo_start = albedo_tmp;
+                else
+                    albedo_end = albedo_tmp;
+                end           
+            end
+            
+            reflection(flag) = reflection_tmp;
+            albedo_adjust(flag) = albedo_tmp;
+            densityMap = csvread('output/densityMap.csv');
+            
+        end
+            
         
         %% display densityMap
         densityMap = log(densityMap);
@@ -76,31 +116,31 @@ function test
         colorbar
         axis equal
         axis off      
-        title(['reflectance:' num2str(reflection(flag))])
+        title(['r:' num2str(reflection(flag)) ' a:' num2str(albedo_adjust(flag))])
     end
     
     %% Draw curve
     figure;
 
     subplot(2,2,1);
-    plot(downScale,std_d,'*-');
-    xlabel('downsampleScale');
-    ylabel('std');
+    plot(log2(downScale),albedo_adjust,'*-');
+    xlabel('log downsampleScale');
+    ylabel('albedo');
 
     subplot(2,2,2);
-    plot(std_d,fft_x,'*-');
+    plot(std_d,albedo_adjust,'*-');
     xlabel('std');
-    ylabel('fft');
+    ylabel('albedo');
 
     subplot(2,2,3);
-    plot(std_d,reflection,'*-');
-    xlabel('std');
-    ylabel('bright');
-
+    plot(fft_window,albedo_adjust,'*-');
+    xlabel('fft windowsize');
+    ylabel('albedo');
+    
     subplot(2,2,4);
-    plot(fft_x,reflection,'*-');
-    xlabel('fft');
-    ylabel('bright');
+    plot(fft_Ratio,albedo_adjust,'*-');
+    xlabel('fft ratio');
+    ylabel('albedo');
     
 end
 
@@ -128,17 +168,35 @@ function computeDensityMap(filename_sigmaT_D,albedo,N_Sample)
             [r,c] = getCoord(x(1),x(2),h_sigmaT_d,w_sigmaT_d);
             [row,col] = getCoord(x(1),x(2),mapSize,mapSize);
     
-            densityMap(row,col) = densityMap(row,col) + weight/sigmaT_d_NN(r,c);
+            sigmaT = sigmaT_d_NN(r,c);
+            densityMap(row,col) = densityMap(row,col) + weight/sigmaT;
 %             densityMap(row,col) = densityMap(row,col) + weight;
             
-            t = -log(rand)/sigmaT_d_NN(r,c);
+            %% method 2: Woodcock
+            t = 0;
+            while 1
+                t = t - log(rand)/sigmaT;
+                x_next = x - t * w;
+                if x_next(1)<0 || x_next(1)>1 || x_next(2)<0 || x_next(2)>1
+                    break;
+                end
+                [r_next,c_next] = getCoord(x_next(1),x_next(2),h_sigmaT_d,w_sigmaT_d);
+                sigmaT_next = sigmaT_d_NN(r_next,c_next);
+                if (sigmaT_next/sigmaT)>rand
+                   break; 
+                end
+            end
+            
+            %% method 1: 
+%             t = -log(rand)/sigmaT;
+            %%
             x = x - t * w;
             
             if x(2) > 1.0
                 intersectP_x = x(1) + (1-x(2))*w(1)/w(2);
-                if intersectP_x > 0 && intersectP_x <1
+                if intersectP_x > 0 && intersectP_x < 1
                     reflectance = reflectance + weight;
-%                 reflectance = reflectance + weight/sigmaT_d_NN(r,c);
+%                     reflectance = reflectance + weight/sigmaT;
                     break;
                 else
                     break;
@@ -166,35 +224,39 @@ function [r,c] = getCoord(x,y,H,W)
     r(r==0)=1;c(c==0)=1;
 end
 
-function [fft_log_NN,x] = computeFFT(img_NN)
+function [fft_log_NN,x_list,R_list] = computeFFT(img_NN)
 
     fft_NN = abs(fftshift(fft2(img_NN)));
     fft_log_NN = log(fft_NN+1);
     N = size(fft_NN,1);
     
-    x_start = 0;
-    x_end = 1;
-    R = 0.95;
-    err=1;
-    while(err>0.001 && (x_end-x_start)>0.001)
-        
-        x = (x_start+x_end)/2;
-        M = N*x;
+    R_list = [0:0.02:1];
+    x_list = [];
+    for R = R_list
+        x_start = 0;
+        x_end = 1;
+        err=1;
+        while(err>0.001 && (x_end-x_start)>0.001)
 
-        fft_sub_MM = fft_NN(round(N*(1-x)/2):round(N*(1+x)/2)+1, round(N*(1-x)/2):round(N*(1+x)/2)+1); 
+            x = (x_start+x_end)/2;
+            M = N*x;
 
-        E_all = sum(fft_NN(:));
-        E_sub = sum(fft_sub_MM(:));
-        ratio = E_sub/E_all;
-        
-        if (ratio<R)
-            x_start = x;
-        else
-            x_end = x;
+            fft_sub_MM = fft_NN(round(N*(1-x)/2):round(N*(1+x)/2)+1, round(N*(1-x)/2):round(N*(1+x)/2)+1); 
+
+            E_all = sum(fft_NN(:));
+            E_sub = sum(fft_sub_MM(:));
+            ratio = E_sub/E_all;
+
+            if (ratio<R)
+                x_start = x;
+            else
+                x_end = x;
+            end
+
+            err = abs(ratio-R);
+
         end
-        
-        err = abs(ratio-R);
-        
+        x_list = [x_list,x];
     end
 end
 

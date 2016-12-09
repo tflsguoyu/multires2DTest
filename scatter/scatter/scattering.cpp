@@ -101,6 +101,9 @@ int main(int argc, char *argv[]) {
 
 		int r, c;
 		int row, col;
+		double sigmaT, sigmaT_next;
+		double x_next[2];
+		int r_next, c_next;
 		//getCoord(x[0], x[1], h_sigmaT_d, w_sigmaT_d, r, c);
 
 		double weight = 1.0 / N_Sample;
@@ -110,16 +113,32 @@ int main(int argc, char *argv[]) {
 			getCoord(x[0], x[1], h_sigmaT_d, w_sigmaT_d, r, c);
 			getCoord(x[0], x[1], mapSize, mapSize, row, col);
 
-			densityMap[row][col] += weight / sigmaT_d_NN[r][c];
+			sigmaT = sigmaT_d_NN[r][c];
+			densityMap[row][col] += weight / sigmaT;
 			//densityMap[row][col] += weight;
 
-			double t = -log(rng()) / sigmaT_d_NN[r][c];
+			// Method 1: 
+			//double t = -log(rng()) / sigmaT;
+
+			// Method 2: Woodcock
+			double t = 0.0;
+			while (1) {
+				t = t - log(rng()) / sigmaT;
+				x_next[0] = x[0] - t * w[0]; x_next[1] = x[1] - t * w[1];
+				if (x_next[0] < 0 || x_next[0]>1 || x_next[1] < 0 || x_next[1]>1)
+					break;
+				getCoord(x_next[0], x_next[1], h_sigmaT_d, w_sigmaT_d, r_next, c_next);
+				sigmaT_next = sigmaT_d_NN[r_next][c_next];
+				if ((sigmaT_next / sigmaT) > rng())
+					break;
+			}
+			
 			x[0] = x[0] - t * w[0]; x[1] = x[1] - t * w[1];
 
 			if (x[1] > 1.0) {
 				double intersectP_x = x[0] + (1 - x[1]) * w[0] / w[1];
 				if (intersectP_x > 0 && intersectP_x < 1) {
-					//reflectance += weight / sigmaT_d_NN[r][c];
+					//reflectance += weight / sigmaT;
 					reflectance += weight;
 					break;
 				}

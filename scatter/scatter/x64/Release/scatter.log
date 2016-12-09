@@ -4,6 +4,6 @@ scattering.cpp(71): warning C4244: '=': conversion from 'double' to 'int', possi
   Generating code
   3 of 265 functions ( 1.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    37 functions had inline decision re-evaluated but remain unchanged
+    1 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   scatter.vcxproj -> C:\Users\GY\gyDocuments\multires2DTest\scatter\x64\Release\scatter.exe
