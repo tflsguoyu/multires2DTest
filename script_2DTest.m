@@ -4,7 +4,7 @@ function test
 %     format long
    
     %% Load SigmaT
-    sigmaT = csvread('input/sigmaT222.csv');  
+    sigmaT = csvread('input/sigmaT2.csv');  
     scale = 1;
     sigmaT = scale * sigmaT;
     sigmaT_size = size(sigmaT,1);
@@ -59,7 +59,7 @@ function test
         
         %% scattering    
         sigmaT_filename = 'output/sigmaTDownSample.csv';
-        N = 2000000;
+        N = 100000000;
         if flag == 1
             albedo = 0.96;
         
@@ -74,7 +74,7 @@ function test
             albedo_adjust(flag) = albedo;
 
         else
-            albedo_start = albedo-0.1;
+            albedo_start = albedo-0.5;
             albedo_end = albedo;
             
             while 1
