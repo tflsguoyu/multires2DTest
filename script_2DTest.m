@@ -4,8 +4,8 @@ function test
 %     format long
    
     %% Load SigmaT
-    sigmaT = csvread('input/sigmaT2.csv');  
-    scale = 1;
+    sigmaT = csvread('input/sigmaT_binaryRand.csv');  
+    scale = 10;
     sigmaT = scale * sigmaT;
     sigmaT_size = size(sigmaT,1);
     
@@ -59,16 +59,16 @@ function test
         
         %% scattering    
         sigmaT_filename = 'output/sigmaTDownSample.csv';
-        N = 100000000;
+        N = 10000000;
         if flag == 1
-            albedo = 0.5;
+            albedo = 0.95;
         
             % MATLAB 
     %         computeDensityMap(sigmaT_filename,albedo,N);
             % C++ windows
-            system(['scatter.exe ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
+%             system(['scatter.exe ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
             % C++ Linux
-    %         system(['./scatter_linux ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
+            system(['./scatter_linux ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
             densityMap = csvread('output/densityMap.csv');
             reflection(flag) = csvread('output/reflectance.csv');
             albedo_adjust(flag) = albedo;
@@ -83,9 +83,9 @@ function test
                 % MATLAB 
         %         computeDensityMap(sigmaT_filename,albedo,N);
                 % C++ windows
-                system(['scatter.exe ' sigmaT_filename ' ' num2str(albedo_tmp) ' ' num2str(N)]);
+%                 system(['scatter.exe ' sigmaT_filename ' ' num2str(albedo_tmp) ' ' num2str(N)]);
                 % C++ Linux
-        %         system(['./scatter_linux ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N)]);
+                system(['./scatter_linux ' sigmaT_filename ' ' num2str(albedo_tmp) ' ' num2str(N)]);
                 reflection_tmp = csvread('output/reflectance.csv');
 
                 err = reflection_tmp - reflection(1);
