@@ -61,7 +61,7 @@ function test
         sigmaT_filename = 'output/sigmaTDownSample.csv';
         N = 100000000;
         if flag == 1
-            albedo = 0.96;
+            albedo = 0.5;
         
             % MATLAB 
     %         computeDensityMap(sigmaT_filename,albedo,N);
