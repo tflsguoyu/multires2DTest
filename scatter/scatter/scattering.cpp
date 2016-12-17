@@ -16,7 +16,7 @@
 using namespace std;
 //using namespace cv;
 #define PI 3.1415926535897932384626433832795
-
+const int res = 256;
 
 /*
  * Thread-safe random number generator
@@ -41,11 +41,11 @@ struct RNG {
     std::vector<std::mt19937> engines;
 } rng;
 
-void readCSV(string filename, double data[][320]) {
+void readCSV(string filename, double data[][res]) {
 
 	std::ifstream file(filename);
 
-	for (int row = 0; row < 320; row++)
+	for (int row = 0; row < res; row++)
 	{
 		std::string line;
 		std::getline(file, line);
@@ -54,7 +54,7 @@ void readCSV(string filename, double data[][320]) {
 
 		std::stringstream iss(line);
 
-		for (int col = 0; col < 320; col++)
+		for (int col = 0; col < res; col++)
 		{
 			std::string val;
 			std::getline(iss, val, ',');
@@ -80,8 +80,8 @@ int main(int argc, char *argv[]) {
 	//#pragma omp critical
 	rng.init(1);
 
-	const int h_sigmaT_d = 320;
-	const int w_sigmaT_d = 320;
+	const int h_sigmaT_d = res;
+	const int w_sigmaT_d = res;
 
 	double sigmaT_d_NN[h_sigmaT_d][w_sigmaT_d];
 	readCSV(argv[1], sigmaT_d_NN);
