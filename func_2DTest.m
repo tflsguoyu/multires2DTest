@@ -25,7 +25,7 @@ function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,al
 
         if ifDrawFFT
             subplot(2,N_downScale,flag);       
-            imagesc(sigmaT_d_NN);colormap(gray);
+            imagesc(sigmaT_d_NN);colormap(copper);
             axis off
             axis image
             h = colorbar('southoutside');

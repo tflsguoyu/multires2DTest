@@ -55,4 +55,4 @@ sigmaT = sigmaT(startP:startP+sigmaT_resolution-1,startP:startP+sigmaT_resolutio
 %     sigmaT = sigmaT(1:sigmaT_resolution, 1:sigmaT_resolution);
 %     sigmaT = imrotate(sigmaT,90);
 %%
-csvwrite('input/sigmaT_diagonal.csv',sigmaT);
+csvwrite('input/sigmaT_diagonal_sparse.csv',sigmaT);
