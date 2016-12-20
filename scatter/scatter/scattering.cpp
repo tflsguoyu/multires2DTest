@@ -16,7 +16,7 @@
 using namespace std;
 //using namespace cv;
 #define PI 3.1415926535897932384626433832795
-const int res = 256;
+const int res = 52;
 
 /*
  * Thread-safe random number generator
@@ -89,6 +89,13 @@ int main(int argc, char *argv[]) {
 	const double albedo = atof(argv[2]);
 	const int N_Sample = atoi(argv[3]);
 
+	double sigmaT_MAX = 0.0;
+	for (int i = 0; i < res; i++)
+		for (int j = 0; j < res; j++) {
+			if (sigmaT_d_NN[i][j] > sigmaT_MAX)
+				sigmaT_MAX = sigmaT_d_NN[i][j];
+		}
+
 	const int mapSize = 32;
 	double reflectance = 0.0;
 	double densityMap[mapSize][mapSize] = { { 0 } };
@@ -110,26 +117,19 @@ int main(int argc, char *argv[]) {
 
 		for (int dep = 1; dep < maxDepth; dep++) {
 
-			getCoord(x[0], x[1], h_sigmaT_d, w_sigmaT_d, r, c);
-			getCoord(x[0], x[1], mapSize, mapSize, row, col);
-
-			sigmaT = sigmaT_d_NN[r][c];
-			densityMap[row][col] += weight / sigmaT;
-			//densityMap[row][col] += weight;
-
 			// Method 1: 
 			//double t = -log(rng()) / sigmaT;
 
 			// Method 2: Woodcock
 			double t = 0.0;
 			while (1) {
-				t = t - log(rng()) / sigmaT;
+				t = t - log(rng()) / sigmaT_MAX;
 				x_next[0] = x[0] - t * w[0]; x_next[1] = x[1] - t * w[1];
 				if (x_next[0] < 0 || x_next[0]>1 || x_next[1] < 0 || x_next[1]>1)
 					break;
 				getCoord(x_next[0], x_next[1], h_sigmaT_d, w_sigmaT_d, r_next, c_next);
 				sigmaT_next = sigmaT_d_NN[r_next][c_next];
-				if ((sigmaT_next / sigmaT) > rng())
+				if ((sigmaT_next / sigmaT_MAX) > rng())
 					break;
 			}
 			
@@ -150,6 +150,14 @@ int main(int argc, char *argv[]) {
 			
 			double theta = 2.0 * PI * rng();
 			w[0] = cos(theta); w[1] = sin(theta);
+			
+			getCoord(x[0], x[1], h_sigmaT_d, w_sigmaT_d, r, c);
+			getCoord(x[0], x[1], mapSize, mapSize, row, col);
+
+			sigmaT = sigmaT_d_NN[r][c];
+			densityMap[row][col] += weight / sigmaT;
+			//densityMap[row][col] += weight;
+
 			weight *= albedo;
 
 		}
