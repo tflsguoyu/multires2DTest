@@ -92,7 +92,7 @@ function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,ti
         %% scattering    
         if ifDrawFFT == 1 || ifDrawFFT == 3
             sigmaT_filename = 'output/sigmaTDownSample.csv';
-            N = 1000000;
+            N = 100000000;
             if flag == 1
     %             albedo = 0.95;
 
