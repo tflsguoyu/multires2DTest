@@ -21,11 +21,17 @@ function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,ti
     end
     
     sigmaT = scale * sigmaT;
-    sigmaT_size = size(sigmaT,1);
+    [h_sigmaT, w_sigmaT] = size(sigmaT);
+    size_sigmaT = min(h_sigmaT, w_sigmaT);
+    maxScale = ceil(log2(size_sigmaT));
+    
     
     %% down sample
-    downScale = [1,2,4,8,16];
+    for i = 0: maxScale
+        downScale(i+1) = 2.^i;
+    end
     N_downScale = length(downScale);
+    mean_d = NaN(1,N_downScale);
     std_d = NaN(1,N_downScale);
     albedo_adjust = NaN(1,N_downScale);
     reflection = NaN(1,N_downScale);
@@ -44,6 +50,7 @@ function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,ti
         dlmwrite('output/sigmaTDownSample.csv', sigmaT_d, 'delimiter', ',', 'precision', 15);
         
         %% std of sigmaT
+        mean_d(flag) = mean(sigmaT_d(:));
         std_d(flag) = std(sigmaT_d(:));
 
         if ifDrawFFT == 0
@@ -55,44 +62,43 @@ function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,ti
             t = get(h,'Limits');
             set(h,'Ticks',linspace(t(1),t(2),2));
 %             axis equal
-            title(['std:' num2str(std_d(flag))]);
+            title({['mean:' num2str(mean_d(flag))];['std:' num2str(std_d(flag))]});
         end
                 
         %% fft of sigmaT
-        if ifDrawFFT == 0         
-            if size(sigmaT_d,1) < size(sigmaT_d,2)
-               sigmaT_d_cube = sigmaT_d(:, 1:size(sigmaT_d,1));
-            else
-                sigmaT_d_cube = sigmaT_d;
-            end
+        if ifDrawFFT == 0      
             
-            [fft_log_NN, fft_window_list, fft_Ratio_list] = computeFFT(sigmaT_d_cube);
-            
-            subplot(4,N_downScale,flag+N_downScale*2)
-            imagesc(fft_log_NN);
-            axis off
-            axis image
-            title(['FFT'])
-            
-            diff_fft_window_list = diff(fft_window_list);
-            idx = find(diff_fft_window_list);
-            fft_Ratio(flag) = fft_Ratio_list(idx(1));
-            fft_window(flag) = fft_window_list(fft_Ratio_list==0.9);
-            N = size(fft_log_NN,1);
+            if size(sigmaT_d,1) > 2
+                
+                if size(sigmaT_d,1) < size(sigmaT_d,2)
+                   sigmaT_d_cube = sigmaT_d(:, 1:size(sigmaT_d,1));
+                else
+                    sigmaT_d_cube = sigmaT_d;
+                end
 
-            subplot(4,N_downScale,flag+N_downScale*3)
-            plot(fft_Ratio_list, fft_window_list, '-');
-            xlabel('Ratio');
-            ylabel('Window Size');
-            axis equal
-            axis([0 1 0 1])
+                [fft_log_NN, fft_window_list, fft_Ratio_list] = computeFFT(sigmaT_d_cube);
+
+                subplot(4,N_downScale,flag+N_downScale*2)
+                imagesc(fft_log_NN);
+                axis off
+                axis image
+                title(['FFT'])
+                
+                subplot(4,N_downScale,flag+N_downScale*3)
+                plot(fft_Ratio_list, fft_window_list, '-');
+                xlabel('Ratio');
+                ylabel('Window Size');
+                axis equal
+                axis([0 1 0 1])
+            
+            end
         
         end
         
         %% scattering    
         if ifDrawFFT == 1 || ifDrawFFT == 3
             sigmaT_filename = 'output/sigmaTDownSample.csv';
-            N = 100000000;
+            N = 1000000;
             if flag == 1
     %             albedo = 0.95;
 
@@ -101,6 +107,7 @@ function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,ti
                 h_region = 1;
                 w_region = h_region * (w_sigmaT_d/h_sigmaT_d);
                 
+%                 tic;
                 if strcmp(platform,'MATLAB')
                 % MATLAB 
                     computeDensityMap(sigmaT_filename,albedo,N,...
@@ -116,6 +123,7 @@ function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,ti
                     system(['./scatter_linux ' sigmaT_filename ' ' num2str(albedo) ' ' num2str(N) ' ' ...
                         num2str(h_sigmaT_d) ' ' num2str(w_sigmaT_d) ' ' num2str(h_region) ' ' num2str(w_region)]);
                 end
+%                 toc
                 densityMap = csvread('output/densityMap.csv');
                 reflection(flag) = csvread('output/reflectance.csv');
                 albedo_adjust(flag) = albedo;
@@ -134,6 +142,7 @@ function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,ti
                     h_region = 1;
                     w_region = h_region * (w_sigmaT_d/h_sigmaT_d);
                     
+%                     tic;
                     if strcmp(platform,'MATLAB')
                     % MATLAB 
                         computeDensityMap(sigmaT_filename,albedo_tmp,N,...
@@ -149,6 +158,7 @@ function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,ti
                         system(['./scatter_linux ' sigmaT_filename ' ' num2str(albedo_tmp) ' ' num2str(N) ' ' ...
                             num2str(h_sigmaT_d) ' ' num2str(w_sigmaT_d) ' ' num2str(h_region) ' ' num2str(w_region)]);
                     end
+%                     toc
                     reflection_tmp = csvread('output/reflectance.csv');
 
                     err = reflection_tmp - reflection(1);
@@ -349,7 +359,7 @@ function [fft_log_NN,x_list,R_list] = computeFFT(img_NN)
     fft_NN = abs(fftshift(fft2(img_NN)));
     fft_log_NN = log(fft_NN+1);
     N = size(fft_NN,1);
-    
+        
     R_list = [0:0.01:1];
     x_list = [];
     for R = R_list

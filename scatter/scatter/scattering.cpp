@@ -8,7 +8,7 @@
 #include <random>
 #include <vector>
 #include <omp.h>
-
+#include <ctime>
 //#include <opencv2/core/core.hpp>
 //#include <opencv2/highgui/highgui.hpp>
 //#include <opencv2/imgproc/imgproc.hpp>
@@ -84,6 +84,10 @@ int main(int argc, char *argv[]) {
 	const double h = atof(argv[6]);
 	const double w = atof(argv[7]);
 
+	//clock_t start;
+	//double duration;
+	//start = clock();
+
 	// read csv
 	double **sigmaT_d_NN = new double*[h_sigmaT_d];
 	for (int i = 0; i < h_sigmaT_d; i++)
@@ -116,18 +120,23 @@ int main(int argc, char *argv[]) {
 		}
 
 	// create density map 
-	//int h_mapSize = 32;
-	//int w_mapSize = h_mapSize * round(w / h);
-	//double **densityMap = new double*[h_mapSize];
-	//for (int i = 0; i < h_mapSize; i++)
-	//	densityMap[i] = new double[w_mapSize];
-	//for (int i = 0; i < h_mapSize; i++)
-	//	for (int j = 0; j < w_mapSize; j++)
-	//		densityMap[i][j] = 0;
+	int h_mapSize = 32;
+	int w_mapSize = h_mapSize * round(w / h);
+	double **densityMap = new double*[h_mapSize];
+	for (int i = 0; i < h_mapSize; i++)
+		densityMap[i] = new double[w_mapSize];
+	for (int i = 0; i < h_mapSize; i++)
+		for (int j = 0; j < w_mapSize; j++)
+			densityMap[i][j] = 0;
 
 	double reflectanceTotal = 0.0;
 	double *reflectance = new double[nworkers];
 	for (int i = 0; i < nworkers; i++) reflectance[i] = 0;
+
+	//duration = (clock() - start) / (double)CLOCKS_PER_SEC;
+	//cout << "Time: " << duration * 1000 << "ms" << endl;
+
+	//start = clock();
 
 #pragma omp parallel for schedule(dynamic, 1)
 	for (int i = 1; i < N_Sample; i++) {
@@ -147,6 +156,15 @@ int main(int argc, char *argv[]) {
 		double weight = 1.0 / N_Sample;
 
 		for (int dep = 1; dep < maxDepth; dep++) {
+
+			double p;
+			if (dep <= 10)
+				p = 1.0;
+			else
+				p = 0.9;
+
+			if (rng() > p)
+				break;
 
 			// Method 1: 
 			//double t = -log(rng()) / sigmaT;
@@ -182,48 +200,57 @@ int main(int argc, char *argv[]) {
 			d[0] = cos(theta); d[1] = sin(theta);
 			
 			getCoord(x[0]/w, x[1]/h, h_sigmaT_d, w_sigmaT_d, r, c);
-			//getCoord(x[0]/w, x[1]/h, h_mapSize, w_mapSize, row, col);
+			getCoord(x[0]/w, x[1]/h, h_mapSize, w_mapSize, row, col);
 
 			sigmaT = sigmaT_d_NN[r][c];
-			//densityMap[row][col] += weight / sigmaT;
+			densityMap[row][col] += weight / sigmaT;
 
 			weight *= albedo;
 
 		}
 	}
-//#pragma omp critical
+
+	//duration = (clock() - start) / (double)CLOCKS_PER_SEC;
+	//cout << "Time: " << duration * 1000 << "ms" << endl;
+
+	//start = clock();
+
+#pragma omp critical
+	
 	for (int i = 0; i < nworkers; i++)
 		reflectanceTotal += reflectance[i];
 
-
 	ofstream outfile;
-	//outfile.open("output/densityMap.csv");
-	//for (int i = 0; i<h_mapSize; i++)
-	//{
-	//	outfile << densityMap[i][0];
+	outfile.open("output/densityMap.csv");
+	for (int i = 0; i<h_mapSize; i++)
+	{
+		outfile << densityMap[i][0];
 
-	//	for (int j = 1; j<w_mapSize; j++)
-	//	{
-	//		outfile << "," << densityMap[i][j];
-	//	}
+		for (int j = 1; j<w_mapSize; j++)
+		{
+			outfile << "," << densityMap[i][j];
+		}
 
-	//	outfile << endl;
-	//}
-	//outfile.close();
+		outfile << endl;
+	}
+	outfile.close();
 
 	outfile.open("output/reflectance.csv");
 	outfile << reflectanceTotal;
 	outfile.close();
 
-	//for (int i = 0; i < h_mapSize; i++)
-	//	delete[] densityMap[i];
-	//delete[] densityMap;
+	for (int i = 0; i < h_mapSize; i++)
+		delete[] densityMap[i];
+	delete[] densityMap;
 
 	for (int i = 0; i < h_sigmaT_d; i++)
 		delete[] sigmaT_d_NN[i];
 	delete[] sigmaT_d_NN;
 
 	delete[] reflectance;
+
+	//duration = (clock() - start) / (double)CLOCKS_PER_SEC;
+	//cout << "Time: " << duration * 1000 << "ms" << endl;
 
 	return 0;
 }
