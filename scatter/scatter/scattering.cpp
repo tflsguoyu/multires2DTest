@@ -9,6 +9,7 @@
 #include <vector>
 #include <omp.h>
 #include <ctime>
+#include <iomanip>
 //#include <opencv2/core/core.hpp>
 //#include <opencv2/highgui/highgui.hpp>
 //#include <opencv2/imgproc/imgproc.hpp>
@@ -98,8 +99,8 @@ int main(int argc, char *argv[]) {
 	{
 		string line;
 		getline(file, line);
-		if (!file.good())
-			break;
+		//if (!file.good())
+		//	break;
 
 		stringstream iss(line);
 		for (int col = 0; col < w_sigmaT_d; col++)
@@ -188,6 +189,7 @@ int main(int argc, char *argv[]) {
 				double intersectP_x = x[0] + (h - x[1]) * d[0] / d[1];
 				if (intersectP_x > 0 && intersectP_x < w) {
 					reflectance[tid] += weight;
+					//reflectanceTotal += weight;
 					break;
 				}
 				else
@@ -224,11 +226,12 @@ int main(int argc, char *argv[]) {
 	outfile.open("output/densityMap.csv");
 	for (int i = 0; i<h_mapSize; i++)
 	{
-		outfile << densityMap[i][0];
+		outfile << fixed;
+		outfile << setprecision(15) << densityMap[i][0];
 
 		for (int j = 1; j<w_mapSize; j++)
 		{
-			outfile << "," << densityMap[i][j];
+			outfile << "," << setprecision(15) << densityMap[i][j];
 		}
 
 		outfile << endl;
@@ -236,7 +239,8 @@ int main(int argc, char *argv[]) {
 	outfile.close();
 
 	outfile.open("output/reflectance.csv");
-	outfile << reflectanceTotal;
+	outfile << fixed;
+	outfile << setprecision(15) << reflectanceTotal;
 	outfile.close();
 
 	for (int i = 0; i < h_mapSize; i++)

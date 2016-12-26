@@ -1,7 +1,7 @@
 function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,tile, scale, albedo, ifDrawFFT, platform)
 %    func_2DTest(sigmaT_inputFilename,tile, scale, albedo, ifDrawFFT, platform)
 
-
+    format long;
     %% Load SigmaT
     ext = sigmaT_inputFilename(end-2:end);
     if strcmp(ext,'csv')
@@ -27,7 +27,7 @@ function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,ti
     
     
     %% down sample
-    for i = 0: maxScale
+    for i = 0: maxScale-4
         downScale(i+1) = 2.^i;
     end
     N_downScale = length(downScale);
@@ -47,7 +47,7 @@ function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,ti
 %         sigmaT_d = imresize(sigmaT,1/windowsize,'box');
         [h,w] = size(sigmaT_d);
         disp(['sigmaT: ' num2str(h) ' x ' num2str(w)]);
-        dlmwrite('output/sigmaTDownSample.csv', sigmaT_d, 'delimiter', ',', 'precision', 15);
+        dlmwrite('output/sigmaTDownSample.csv', sigmaT_d, 'delimiter', ',', 'precision', 16);
         
         %% std of sigmaT
         mean_d(flag) = mean(sigmaT_d(:));
@@ -98,7 +98,7 @@ function [albedo_adjust, downScale, std_d] = func_2DTest(sigmaT_inputFilename,ti
         %% scattering    
         if ifDrawFFT == 1 || ifDrawFFT == 3
             sigmaT_filename = 'output/sigmaTDownSample.csv';
-            N = 1000000;
+            N = 100000;
             if flag == 1
     %             albedo = 0.95;
 
@@ -220,6 +220,16 @@ function computeDensityMap(filename_sigmaT_D,albedo,N_Sample,h_sigmaT_d,w_sigmaT
          
         for dep = 1 : maxDepth
             
+			if dep <= 10
+				p = 1.0;
+			else
+				p = 0.9;
+            end
+            
+			if rand > p
+				break;
+            end
+            
             %% method 2: Woodcock
             t = 0;
             while 1
@@ -266,8 +276,8 @@ function computeDensityMap(filename_sigmaT_D,albedo,N_Sample,h_sigmaT_d,w_sigmaT
         
     end
     
-    dlmwrite('output/reflectance.csv',reflectance,'delimiter', ',', 'precision', 15);
-    dlmwrite('output/densityMap.csv',densityMap,'delimiter', ',', 'precision', 15);
+    dlmwrite('output/reflectance.csv',reflectance,'delimiter', ',', 'precision', 16);
+    dlmwrite('output/densityMap.csv',densityMap,'delimiter', ',', 'precision', 16);
     
 end
 

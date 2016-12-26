@@ -1,10 +1,8 @@
 ﻿  scattering.cpp
-scattering.cpp(69): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 scattering.cpp(70): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-scattering.cpp(124): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+scattering.cpp(71): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+scattering.cpp(125): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
   Generating code
-  4 of 266 functions ( 1.5%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    20 functions had inline decision re-evaluated but remain unchanged
+  All 267 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   scatter.vcxproj -> C:\Users\GY\gyDocuments\multires2DTest\scatter\x64\Release\scatter.exe

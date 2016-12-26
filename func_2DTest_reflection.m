@@ -1,7 +1,7 @@
 function [reflection, downScale, std_d] = func_2DTest_reflection(sigmaT_inputFilename,tile, scale, albedo, ifDrawFFT, platform)
 %    func_2DTest(sigmaT_inputFilename,tile, scale, albedo, ifDrawFFT, platform)
 
-
+    format long;
     %% Load SigmaT
     ext = sigmaT_inputFilename(end-2:end);
     if strcmp(ext,'csv')
@@ -21,10 +21,14 @@ function [reflection, downScale, std_d] = func_2DTest_reflection(sigmaT_inputFil
     end
     
     sigmaT = scale * sigmaT;
-    sigmaT_size = size(sigmaT,1);
+    [h_sigmaT, w_sigmaT] = size(sigmaT);
+    size_sigmaT = min(h_sigmaT, w_sigmaT);
+    maxScale = ceil(log2(size_sigmaT));
     
     %% down sample
-    downScale = [1,2,4,8,16];
+    for i = 0 : maxScale-4
+        downScale(i+1) = 2.^i;
+    end
     N_downScale = length(downScale);
     std_d = NaN(1,N_downScale);
     albedo_adjust = NaN(1,N_downScale);
@@ -41,7 +45,7 @@ function [reflection, downScale, std_d] = func_2DTest_reflection(sigmaT_inputFil
 %         sigmaT_d = imresize(sigmaT,1/windowsize,'box');
         [h,w] = size(sigmaT_d);
         disp(['sigmaT: ' num2str(h) ' x ' num2str(w)]);
-        dlmwrite('output/sigmaTDownSample.csv', sigmaT_d, 'delimiter', ',', 'precision', 15);
+        dlmwrite('output/sigmaTDownSample.csv', sigmaT_d, 'delimiter', ',', 'precision', 16);
         
         %% std of sigmaT
         std_d(flag) = std(sigmaT_d(:));
@@ -129,7 +133,7 @@ function [reflection, downScale, std_d] = func_2DTest_reflection(sigmaT_inputFil
         if ifDrawFFT == 3
             densityMap = log(densityMap);
 
-            figure(flag+222);
+            figure(222);
             subplot(N_downScale,1,flag)
             imagesc(densityMap)
             axis equal
@@ -209,8 +213,8 @@ function computeDensityMap(filename_sigmaT_D,albedo,N_Sample,h_sigmaT_d,w_sigmaT
         
     end
     
-    dlmwrite('output/reflectance.csv',reflectance,'delimiter', ',', 'precision', 15);
-    dlmwrite('output/densityMap.csv',densityMap,'delimiter', ',', 'precision', 15);
+    dlmwrite('output/reflectance.csv',reflectance,'delimiter', ',', 'precision', 16);
+    dlmwrite('output/densityMap.csv',densityMap,'delimiter', ',', 'precision', 16);
     
 end
 
