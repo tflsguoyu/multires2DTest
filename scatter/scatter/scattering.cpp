@@ -10,13 +10,19 @@
 #include <omp.h>
 #include <ctime>
 #include <iomanip>
+
+#include <Eigen/Dense>
+
 //#include <opencv2/core/core.hpp>
 //#include <opencv2/highgui/highgui.hpp>
 //#include <opencv2/imgproc/imgproc.hpp>
 
 using namespace std;
+using namespace Eigen;
 //using namespace cv;
 #define PI 3.1415926535897932384626433832795
+
+int i, j;
 
 /*
  * Thread-safe random number generator
@@ -41,30 +47,6 @@ struct RNG {
     std::vector<std::mt19937> engines;
 } rng;
 
-//void readCSV(string filename, double data[][res]) {
-//
-//	std::ifstream file(filename);
-//
-//	for (int row = 0; row < res; row++)
-//	{
-//		std::string line;
-//		std::getline(file, line);
-//		if (!file.good())
-//			break;
-//
-//		std::stringstream iss(line);
-//
-//		for (int col = 0; col < res; col++)
-//		{
-//			std::string val;
-//			std::getline(iss, val, ',');
-//			std::stringstream convertor(val);
-//			convertor >> data[row][col];
-//		}
-//	}
-//
-//}
-
 void getCoord(double x, double y, int H, int W, int &r, int &c) {
 	
 	r = ceil((1.0 - y)*H);
@@ -77,7 +59,8 @@ int main(int argc, char *argv[]) {
     int nworkers = omp_get_num_procs();
     omp_set_num_threads(nworkers);
 	rng.init(nworkers);	
-	
+
+	ifstream file(argv[1]);
 	const double albedo = atof(argv[2]);
 	const int N_Sample = atoi(argv[3]);
 	const int h_sigmaT_d = atoi(argv[4]);
@@ -85,17 +68,9 @@ int main(int argc, char *argv[]) {
 	const double h = atof(argv[6]);
 	const double w = atof(argv[7]);
 
-	//clock_t start;
-	//double duration;
-	//start = clock();
-
 	// read csv
-	double **sigmaT_d_NN = new double*[h_sigmaT_d];
-	for (int i = 0; i < h_sigmaT_d; i++)
-		sigmaT_d_NN[i] = new double[w_sigmaT_d];
-	
-	ifstream file(argv[1]);
-	for (int row = 0; row < h_sigmaT_d; row++)
+	MatrixXd sigmaT_d_NN(h_sigmaT_d, w_sigmaT_d);
+	for (int i = 0; i < h_sigmaT_d; ++i)
 	{
 		string line;
 		getline(file, line);
@@ -103,135 +78,116 @@ int main(int argc, char *argv[]) {
 		//	break;
 
 		stringstream iss(line);
-		for (int col = 0; col < w_sigmaT_d; col++)
+		for (int j = 0; j < w_sigmaT_d; ++j)
 		{
 			string val;
 			getline(iss, val, ',');
 			stringstream convertor(val);
-			convertor >> sigmaT_d_NN[row][col];
+			convertor >> sigmaT_d_NN(i,j);
 		}
 	}
 
 	// compute MAX of sigmaT
-	double sigmaT_MAX = 0.0;
-	for (int i = 0; i < h_sigmaT_d; i++)
-		for (int j = 0; j < w_sigmaT_d; j++) {
-			if (sigmaT_d_NN[i][j] > sigmaT_MAX)
-				sigmaT_MAX = sigmaT_d_NN[i][j];
-		}
+	double sigmaT_MAX = sigmaT_d_NN.maxCoeff();
 
 	// create density map 
 	int h_mapSize = 32;
 	int w_mapSize = h_mapSize * round(w / h);
-	double **densityMap = new double*[h_mapSize];
-	for (int i = 0; i < h_mapSize; i++)
-		densityMap[i] = new double[w_mapSize];
-	for (int i = 0; i < h_mapSize; i++)
-		for (int j = 0; j < w_mapSize; j++)
-			densityMap[i][j] = 0;
+	MatrixXd densityMapTotal = MatrixXd::Zero(h_mapSize, w_mapSize);
+	vector<MatrixXd> densityMap(nworkers);
+	for (i = 0; i < nworkers; ++i) 
+		densityMap[i] = MatrixXd::Zero(h_mapSize, w_mapSize);
 
+	// create output reflectance
 	double reflectanceTotal = 0.0;
-	double *reflectance = new double[nworkers];
-	for (int i = 0; i < nworkers; i++) reflectance[i] = 0;
+	VectorXd reflectance = VectorXd::Zero(nworkers);
 
-	//duration = (clock() - start) / (double)CLOCKS_PER_SEC;
-	//cout << "Time: " << duration * 1000 << "ms" << endl;
 
-	//start = clock();
 
 #pragma omp parallel for schedule(dynamic, 1)
-	for (int i = 1; i < N_Sample; i++) {
+	for (int sample = 1; sample <= N_Sample; ++sample) {
 
 		int tid = omp_get_thread_num();
 
 		const int maxDepth = 1000;
-		double x[2] = {rng()*w, h};
-		double d[2] = { 0.0, 1.0 };
+		Vector2d x(rng()*w, h);
+		Vector2d d(0.0, 1.0);
 
 		int r, c;
 		int row, col;
 		double sigmaT, sigmaT_next;
-		double x_next[2];
+		Vector2d x_next;
 		int r_next, c_next;
 
 		double weight = 1.0 / N_Sample;
 
-		for (int dep = 1; dep < maxDepth; dep++) {
-
-			double p;
-			if (dep <= 10)
-				p = 1.0;
-			else
-				p = 0.9;
-
-			if (rng() > p)
-				break;
+		for (int dep = 1; dep <= maxDepth; ++dep) {
 
 			// Method 1: 
-			//double t = -log(rng()) / sigmaT;
+			//double t = -log(rng()) / sigmaT_MAX;
 
 			// Method 2: Woodcock
 			double t = 0.0;
 			while (1) {
 				t = t - log(rng()) / sigmaT_MAX;
-				x_next[0] = x[0] - t * d[0]; x_next[1] = x[1] - t * d[1];
-				if (x_next[0] < 0 || x_next[0]>w || x_next[1] < 0 || x_next[1]>h)
+				x_next = x - t * d;
+				if (x_next(0) < 0 || x_next(0) > w || x_next(1) < 0 || x_next(1) > h)
 					break;
-				getCoord(x_next[0]/w, x_next[1]/w, h_sigmaT_d, w_sigmaT_d, r_next, c_next);
-				sigmaT_next = sigmaT_d_NN[r_next][c_next];
+				getCoord(x_next(0)/w, x_next(1)/h, h_sigmaT_d, w_sigmaT_d, r_next, c_next);
+				sigmaT_next = sigmaT_d_NN(r_next,c_next);
 				if ((sigmaT_next / sigmaT_MAX) > rng())
 					break;
 			}
 			
-			x[0] = x[0] - t * d[0]; x[1] = x[1] - t * d[1];
+			x = x - t * d;
 
-			if (x[1] > h) {
-				double intersectP_x = x[0] + (h - x[1]) * d[0] / d[1];
+			if (x(1) > h) {
+				double intersectP_x = x(0) + (h - x(1)) * d(0) / d(1);
 				if (intersectP_x > 0 && intersectP_x < w) {
-					reflectance[tid] += weight;
-					//reflectanceTotal += weight;
+					reflectance(tid) += weight;
 					break;
 				}
 				else
 					break;
 			}
-			else if (x[0] < 0.0 || x[0] > w || x[1] < 0.0)
+			else if (x(0) < 0.0 || x(0) > w || x(1) < 0.0)
 				break;
 			
 			double theta = 2.0 * PI * rng();
-			d[0] = cos(theta); d[1] = sin(theta);
+			d << cos(theta), sin(theta);
 			
-			getCoord(x[0]/w, x[1]/h, h_sigmaT_d, w_sigmaT_d, r, c);
-			getCoord(x[0]/w, x[1]/h, h_mapSize, w_mapSize, row, col);
+			getCoord(x(0)/w, x(1)/h, h_sigmaT_d, w_sigmaT_d, r, c);
+			getCoord(x(0)/w, x(1)/h, h_mapSize, w_mapSize, row, col);
 
-			sigmaT = sigmaT_d_NN[r][c];
-			densityMap[row][col] += weight / sigmaT;
+			sigmaT = sigmaT_d_NN(r,c);
+			densityMap[tid](row,col) += weight / sigmaT;
 
-			weight *= albedo;
+			if (dep <= 10)
+				weight *= albedo;
+			else
+				if (rng() > albedo) break;
 
 		}
 	}
 
-	//duration = (clock() - start) / (double)CLOCKS_PER_SEC;
-	//cout << "Time: " << duration * 1000 << "ms" << endl;
-
-	//start = clock();
-
 #pragma omp critical
 	
-	for (int i = 0; i < nworkers; i++)
-		reflectanceTotal += reflectance[i];
+	for (i = 0; i < nworkers; ++i)
+		reflectanceTotal += reflectance(i);
+	
+	for (i = 0; i < nworkers; ++i)
+		densityMapTotal += densityMap[i];
 
 	ofstream outfile;
 	outfile.open("output/densityMap.csv");
-	for (int i = 0; i<h_mapSize; i++)
+	for (i = 0; i < h_mapSize; ++i)
 	{
 		outfile << fixed;
-		outfile << setprecision(15) << densityMap[i][0];
+		outfile << setprecision(15) << densityMapTotal(i,0);
 
-		for (int j = 1; j<w_mapSize; j++)
+		for (j = 1; j < w_mapSize; ++j)
 		{
-			outfile << "," << setprecision(15) << densityMap[i][j];
+			outfile << "," << setprecision(15) << densityMapTotal(i,j);
 		}
 
 		outfile << endl;
@@ -242,19 +198,6 @@ int main(int argc, char *argv[]) {
 	outfile << fixed;
 	outfile << setprecision(15) << reflectanceTotal;
 	outfile.close();
-
-	for (int i = 0; i < h_mapSize; i++)
-		delete[] densityMap[i];
-	delete[] densityMap;
-
-	for (int i = 0; i < h_sigmaT_d; i++)
-		delete[] sigmaT_d_NN[i];
-	delete[] sigmaT_d_NN;
-
-	delete[] reflectance;
-
-	//duration = (clock() - start) / (double)CLOCKS_PER_SEC;
-	//cout << "Time: " << duration * 1000 << "ms" << endl;
 
 	return 0;
 }

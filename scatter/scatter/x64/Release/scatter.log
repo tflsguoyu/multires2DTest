@@ -1,8 +1,9 @@
 ﻿  scattering.cpp
-scattering.cpp(70): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-scattering.cpp(71): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-scattering.cpp(125): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+c:\users\gy\documents\eigen-eigen-f562a193118d\eigen\src/Core/arch/CUDA/Half.h : warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
+scattering.cpp(52): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+scattering.cpp(53): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+scattering.cpp(95): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
   Generating code
-  All 267 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 657 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   scatter.vcxproj -> C:\Users\GY\gyDocuments\multires2DTest\scatter\x64\Release\scatter.exe
