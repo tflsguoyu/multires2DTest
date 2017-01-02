@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
 
 
 
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for //schedule(dynamic, 1)
 	for (int sample = 1; sample <= N_Sample; ++sample) {
 
 		int tid = omp_get_thread_num();
@@ -169,8 +169,6 @@ int main(int argc, char *argv[]) {
 
 		}
 	}
-
-#pragma omp critical
 	
 	for (i = 0; i < nworkers; ++i)
 		reflectanceTotal += reflectance(i);
