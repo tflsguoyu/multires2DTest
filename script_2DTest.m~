@@ -1,0 +1,57 @@
+clear; close all; clc
+
+%%
+filename_list{1} = 'input/sigmaT_binaryRand.csv';
+filename_list{2} = 'input/wool.png';
+filename_list{3} = 'input/silk.png';
+
+%%
+for k = 1:length(filename_list)
+    filename = filename_list{k};
+
+    %  
+    scale = 1;
+    tile = 0;
+    albedo = 0.95;
+    
+    disp('');
+    disp([num2str(k) '/' num2str(length(filename_list))]);
+ 
+% [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
+%    mean_d_list, std_d_list, reflection_list, insideVis_list, albedo_list]   
+    tic;
+    [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
+    mean_d_list, std_d_list, reflection_list, insideVis_list, albedo_list]...
+    = multires2DTest(filename,scale,tile,'MAX',albedo,'Linux_C','no');
+    toc
+    save([filename '_results.mat']);
+%     load([filename '_results.mat']);
+    
+
+    N = length(downscale_list);
+
+    figure;
+    for i = 1: N 
+        sigmaT_d_this = sigmaT_d_list{i};
+        h = size()
+        subplot(1,N,i);
+        imagesc(sigmaT_d_this(:,1:size(sigmaT_d,2)/tile));colormap(copper);    
+        axis off
+        axis image
+        h = colorbar('southoutside');
+        t = get(h,'Limits');
+        set(h,'Ticks',linspace(t(1),t(2),2));
+        title({['mean:' num2str(mean_d(flag))];['std:' num2str(std_d(flag))]});
+    end
+
+
+    figure;
+    plot(log2(downscale_list),albedo_list,'*-'); hold on;
+    xlabel('log downsampleScale');
+    ylabel('albedo');
+    title(['Scale = ' num2str(scale) ...
+        ' Tile = ' num2str(tile) ...
+        ' Albedo = ' num2str(albedo)]);
+    grid on;
+    
+end

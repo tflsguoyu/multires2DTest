@@ -9,5 +9,7 @@ endif()
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
+include_directories("/home/tflsguoyu/Documents/include/")
+
 add_executable(scatter_linux scattering.cpp)
 target_link_libraries(scatter_linux ${OpenCV_LIBS})

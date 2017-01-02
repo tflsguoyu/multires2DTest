@@ -14,7 +14,6 @@ for k = 1:length(filename_list)
     tile = 0;
     albedo = 0.95;
     
-    figure;
     disp('');
     disp([num2str(k) '/' num2str(length(filename_list))]);
  
@@ -23,17 +22,58 @@ for k = 1:length(filename_list)
     tic;
     [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
     mean_d_list, std_d_list, reflection_list, insideVis_list, albedo_list]...
-    = multires2DTest(filename,scale,tile,'MAX',albedo,'Windows_C','no');
+    = multires2DTest(filename,scale,tile,'MAX',albedo,'Linux_C','no');
     toc
     save([filename '_results.mat']);
 %     load([filename '_results.mat']);
     
-    plot(log2(downscale_list),albedo_list,'*-'); hold on;
-    xlabel('log downsampleScale');
-    ylabel('albedo');
-    title(['Scale = ' num2str(scale) ...
-        ' Tile = ' num2str(tile) ...
-        ' Albedo = ' num2str(albedo)]);
-    grid on;
+
+    N = length(downscale_list);
+
+    figure;
+    for i = 1: N 
+        sigmaT_d_this = sigmaT_d_list{i};
+        [h,w] = size(sigmaT_d_this);
+        subplot(1,N,i);
+        imagesc(sigmaT_d_this(:,1:h));colormap(copper);    
+        axis off
+        axis image
+        h = colorbar('southoutside');
+        t = get(h,'Limits');
+        set(h,'Ticks',linspace(t(1),t(2),2));
+        title({['mean:' num2str(mean_d_list(i))];['std:' num2str(std_d_list(i))]});
+    end
+    
+    
+    figure;
+    for i = 1: N 
+        fftcurve_d_this = fftcurve_d_list(:,:,i);
+        subplot(1,N,i)
+        plot(fftcurve_d_this(1,:), fftcurve_d_this(2,:), '-');
+        xlabel('Window Size');
+        ylabel('Ratio');
+        axis equal
+        axis([0 1 0 1]);                
+    end
+    
+    
+%     figure;
+%     plot(log2(downscale_list),reflection_list,'*-'); hold on;
+%     xlabel('log downsampleScale');
+%     ylabel('reflectance');
+%     title(['Scale = ' num2str(scale) ...
+%         ' Tile = ' num2str(tile) ...
+%         ' Albedo = ' num2str(albedo)]);
+%     grid on;
+    
+
+%     figure;
+%     plot(log2(downscale_list),albedo_list,'*-'); hold on;
+%     xlabel('log downsampleScale');
+%     ylabel('albedo');
+%     title(['Scale = ' num2str(scale) ...
+%         ' Tile = ' num2str(tile) ...
+%         ' Albedo = ' num2str(albedo)]);
+%     grid on;
     
 end
