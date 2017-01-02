@@ -57,6 +57,7 @@ function [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
         insideVis_list{flag} = insideVis_iter1;
         albedo_list(flag) = albedo_tmp;
        
+        deleteTmpFiles();
     end
                 
 end
