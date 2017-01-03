@@ -1,8 +1,8 @@
 function [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
-    mean_d_list, std_d_list, reflection_list, insideVis_list, albedo_list] = ...
+    mean_d_list, std_d_list, reflection_list, reflection_stderr_list, insideVis_list, albedo_list] = ...
     multires2DTest(sigmaT_filename, scale, tile, max_downscale, albedo, platform, optimize)
 % [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
-%    mean_d_list, std_d_list, reflection_list, insideVis_list, albedo_list] = ...
+%    mean_d_list, std_d_list, reflection_list, reflection_stderr_list, insideVis_list, albedo_list] = ...
 %    multires2DTest(sigmaT_filename, scale, tile, max_downscale, albedo, platform, optimize)
 
     format long;
@@ -34,10 +34,12 @@ function [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
             iter = iter + 1;
             
             albedo_tmp = (albedo_start+albedo_end)/2;
-            [reflection,insideVis] = computeScattering(sigmaT_d,albedo_tmp,platform);
+            [reflection,reflection_stderr,insideVis] = ...
+                computeScattering(sigmaT_d,albedo_tmp,platform);
 
             if iter == 1
                reflection_iter1 = reflection;
+               reflection_stderr_iter1 = reflection_stderr;
                insideVis_iter1 = insideVis;
             end
             
@@ -54,6 +56,7 @@ function [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
         end
         
         reflection_list(flag) = reflection_iter1;
+        reflection_stderr_list(flag) = reflection_stderr_iter1;
         insideVis_list{flag} = insideVis_iter1;
         albedo_list(flag) = albedo_tmp;
        

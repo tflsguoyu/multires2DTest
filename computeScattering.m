@@ -1,7 +1,8 @@
-function [output_reflection,output_insideVis] = computeScattering(input,albedo,platform)
+function [output_reflection,output_reflection_stderr,output_insideVis] ...
+    = computeScattering(input,albedo,platform)
 
     sigmaT_d_filename = 'output/sigmaTDownSample.csv';
-    N = 1000000;
+    N = 10000000;
 
     [h_sigmaT_d,w_sigmaT_d] = size(input);
     h_region = 1; w_region = h_region * (w_sigmaT_d/h_sigmaT_d);
@@ -26,5 +27,7 @@ function [output_reflection,output_insideVis] = computeScattering(input,albedo,p
     
     output_insideVis = csvread('output/densityMap.csv');
     output_reflection = csvread('output/reflectance.csv');
+    output_reflection_stderr = csvread('output/reflectanceStderr.csv');
+    
 
 end

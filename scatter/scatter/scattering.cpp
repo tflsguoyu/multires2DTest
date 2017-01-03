@@ -102,7 +102,10 @@ int main(int argc, char *argv[]) {
 	double reflectanceTotal = 0.0;
 	VectorXd reflectance = VectorXd::Zero(nworkers);
 
+	double reflectanceTotal2 = 0.0;
+	VectorXd reflectance2 = VectorXd::Zero(nworkers);
 
+	double reflectanceStderr = 0.0;
 
 #pragma omp parallel for //schedule(dynamic, 1)
 	for (int sample = 1; sample <= N_Sample; ++sample) {
@@ -119,7 +122,7 @@ int main(int argc, char *argv[]) {
 		Vector2d x_next;
 		int r_next, c_next;
 
-		double weight = 1.0 / N_Sample;
+		double weight = 1.0;
 
 		for (int dep = 1; dep <= maxDepth; ++dep) {
 
@@ -145,6 +148,7 @@ int main(int argc, char *argv[]) {
 				double intersectP_x = x(0) + (h - x(1)) * d(0) / d(1);
 				if (intersectP_x > 0 && intersectP_x < w) {
 					reflectance(tid) += weight;
+					reflectance2(tid) += weight * weight;
 					break;
 				}
 				else
@@ -172,9 +176,17 @@ int main(int argc, char *argv[]) {
 	
 	for (i = 0; i < nworkers; ++i)
 		reflectanceTotal += reflectance(i);
+	reflectanceTotal = reflectanceTotal / N_Sample;
 	
 	for (i = 0; i < nworkers; ++i)
+		reflectanceTotal2 += reflectance2(i);
+	reflectanceTotal2 = reflectanceTotal2 / N_Sample;
+
+	reflectanceStderr = sqrt(reflectanceTotal2 - reflectanceTotal * reflectanceTotal) / sqrt(N_Sample);
+
+	for (i = 0; i < nworkers; ++i)
 		densityMapTotal += densityMap[i];
+	densityMapTotal = densityMapTotal / N_Sample;
 
 	ofstream outfile;
 	outfile.open("output/densityMap.csv");
@@ -195,6 +207,11 @@ int main(int argc, char *argv[]) {
 	outfile.open("output/reflectance.csv");
 	outfile << fixed;
 	outfile << setprecision(15) << reflectanceTotal;
+	outfile.close();
+
+	outfile.open("output/reflectanceStderr.csv");
+	outfile << fixed;
+	outfile << setprecision(15) << reflectanceStderr;
 	outfile.close();
 
 	return 0;
