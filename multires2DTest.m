@@ -1,13 +1,13 @@
 function [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
     mean_d_list, std_d_list, reflection_list, reflection_stderr_list, insideVis_list, albedo_list] = ...
-    multires2DTest(sigmaT_filename, scale, tile, max_downscale, albedo, platform, optimize)
+    multires2DTest(sigmaT_filename, scale, tile, max_downscale, albedo, NoSamples, platform, optimize)
 % [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
 %    mean_d_list, std_d_list, reflection_list, reflection_stderr_list, insideVis_list, albedo_list] = ...
-%    multires2DTest(sigmaT_filename, scale, tile, max_downscale, albedo, platform, optimize)
+%    multires2DTest(sigmaT_filename, scale, tile, max_downscale, albedo, N, platform, optimize)
 
     format long;
     %% 
-    sigmaT = loadSigmaT(sigmaT_filename);
+    sigmaT = loadSigmaT(sigmaT_filename); [h_origin,w_origin] = size(sigmaT);
     sigmaT = scaleSigmaT(sigmaT, scale);
     sigmaT = tileSigmaT(sigmaT, 'x', tile);    
     downscale_list = getDownscaleList(sigmaT, max_downscale);
@@ -17,10 +17,10 @@ function [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
         disp(['downsample: ' num2str(flag)]);
         
         sigmaT_d = computeDownsampledSigmaT(sigmaT, downscale_list(flag));
-        sigmaT_d_list{flag} = sigmaT_d;
+        sigmaT_d_list{flag} = sigmaT_d(1:h_origin,1:w_origin);
         
         [logfft_d, fftcurve_d, mean_d, std_d] = computeFFT(sigmaT_d);  
-        logfft_d_list{flag} = logfft_d;
+        logfft_d_list{flag} = imresize(logfft_d,[size(logfft_d,1) size(logfft_d,1)]);
         fftcurve_d_list(:,:,flag) = fftcurve_d;
         mean_d_list(flag) = mean_d;
         std_d_list(flag) = std_d;
@@ -35,7 +35,7 @@ function [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
             
             albedo_tmp = (albedo_start+albedo_end)/2;
             [reflection,reflection_stderr,insideVis] = ...
-                computeScattering(sigmaT_d,albedo_tmp,platform);
+                computeScattering(sigmaT_d,albedo_tmp,NoSamples,platform);
 
             if iter == 1
                reflection_iter1 = reflection;
@@ -57,7 +57,7 @@ function [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
         
         reflection_list(flag) = reflection_iter1;
         reflection_stderr_list(flag) = reflection_stderr_iter1;
-        insideVis_list{flag} = insideVis_iter1;
+        insideVis_list{flag} = imresize(insideVis_iter1,[size(insideVis_iter1,1) size(insideVis_iter1,1)]);
         albedo_list(flag) = albedo_tmp;
        
         deleteTmpFiles();
