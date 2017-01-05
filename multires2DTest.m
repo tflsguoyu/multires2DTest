@@ -9,14 +9,16 @@ function [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
     %% 
     sigmaT = loadSigmaT(sigmaT_filename); [h_origin,w_origin] = size(sigmaT);
     sigmaT = scaleSigmaT(sigmaT, scale);
-    sigmaT = tileSigmaT(sigmaT, 'x', tile);    
+    sigmaT = tileSigmaT(sigmaT, 'x', tile); [h_tile,w_tile] = size(sigmaT);   
     downscale_list = getDownscaleList(sigmaT, max_downscale);
       
     %%
     for flag = 1: length(downscale_list)
-        disp(['downsample: ' num2str(flag)]);
+        disp(['downsample: ' num2str(flag-1) '/' num2str(length(downscale_list)-1)]);
         
-        sigmaT_d = computeDownsampledSigmaT(sigmaT, downscale_list(flag));
+        sigmaT_d = computeDownsampledSigmaT(sigmaT, downscale_list(flag)); 
+        [h_resize,w_resize] = size(sigmaT_d);
+        sigmaT_d = imresize(sigmaT_d, [h_tile,w_tile], 'box');
         sigmaT_d_list{flag} = sigmaT_d(1:h_origin,1:w_origin);
         
         [logfft_d, fftcurve_d, mean_d, std_d] = computeFFT(sigmaT_d);  
@@ -35,7 +37,7 @@ function [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
             
             albedo_tmp = (albedo_start+albedo_end)/2;
             [reflection,reflection_stderr,insideVis] = ...
-                computeScattering(sigmaT_d,albedo_tmp,NoSamples,platform);
+                computeScattering([h_tile,w_tile],[h_resize,w_resize],albedo_tmp,NoSamples,platform);
 
             if iter == 1
                reflection_iter1 = reflection;

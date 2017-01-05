@@ -1,10 +1,10 @@
 function [output_reflection,output_reflection_stderr,output_insideVis] ...
-    = computeScattering(input,albedo,NoSamples,platform)
+    = computeScattering(hw_origin,hw_resize,albedo,NoSamples,platform)
 
     sigmaT_d_filename = 'output/sigmaTDownSample.csv';
 
-    [h_sigmaT_d,w_sigmaT_d] = size(input);
-    h_region = 1; w_region = h_region * (w_sigmaT_d/h_sigmaT_d);
+    h_sigmaT_d = hw_resize(1); w_sigmaT_d = hw_resize(2);
+    h_region = 1; w_region = h_region * (hw_origin(2)/hw_origin(1));
 
     if strcmp(platform,'MATLAB')
     % MATLAB 

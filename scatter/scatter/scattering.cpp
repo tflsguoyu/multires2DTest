@@ -149,10 +149,8 @@ int main(int argc, char *argv[]) {
 				if (intersectP_x > 0 && intersectP_x < w) {
 					reflectance(tid) += weight;
 					reflectance2(tid) += weight * weight;
-					break;
 				}
-				else
-					break;
+				break;
 			}
 			else if (x(0) < 0.0 || x(0) > w || x(1) < 0.0)
 				break;
