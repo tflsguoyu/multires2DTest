@@ -113,16 +113,17 @@ int main(int argc, char *argv[]) {
 		int tid = omp_get_thread_num();
 
 		const int maxDepth = 1000;
-		Vector2d x(rng()*w, h);
-		Vector2d d(0.0, 1.0);
+		Vector2d pos(rng()*w, h);
+		Vector2d dir(0.0, 1.0);
 
 		int r, c;
 		int row, col;
 		double sigmaT, sigmaT_next;
-		Vector2d x_next;
+		Vector2d pos_next;
 		int r_next, c_next;
 
 		double weight = 1.0;
+		double refl = 0.0;
 
 		for (int dep = 1; dep <= maxDepth; ++dep) {
 
@@ -133,36 +134,37 @@ int main(int argc, char *argv[]) {
 			double t = 0.0;
 			while (1) {
 				t = t - log(rng()) / sigmaT_MAX;
-				x_next = x - t * d;
-				if (x_next(0) < 0 || x_next(0) > w || x_next(1) < 0 || x_next(1) > h)
+				pos_next = pos - t * dir;
+				if (pos_next(0) < 0 || pos_next(0) > w || pos_next(1) < 0 || pos_next(1) > h)
 					break;
-				getCoord(x_next(0)/w, x_next(1)/h, h_sigmaT_d, w_sigmaT_d, r_next, c_next);
+				getCoord(pos_next(0)/w, pos_next(1)/h, h_sigmaT_d, w_sigmaT_d, r_next, c_next);
 				sigmaT_next = sigmaT_d_NN(r_next,c_next);
 				if ((sigmaT_next / sigmaT_MAX) > rng())
 					break;
 			}
 			
-			x = x - t * d;
+			pos = pos - t * dir;
 
-			if (x(1) > h) {
-				double intersectP_x = x(0) + (h - x(1)) * d(0) / d(1);
-				if (intersectP_x > 0 && intersectP_x < w) {
-					reflectance(tid) += weight;
-					reflectance2(tid) += weight * weight;
-				}
+			if (pos(0) < 0.0 || pos(0) > w || pos(1) < 0.0 || pos(1) > h)
 				break;
-			}
-			else if (x(0) < 0.0 || x(0) > w || x(1) < 0.0)
-				break;
-			
-			double theta = 2.0 * PI * rng();
-			d << cos(theta), sin(theta);
-			
-			getCoord(x(0)/w, x(1)/h, h_sigmaT_d, w_sigmaT_d, r, c);
-			getCoord(x(0)/w, x(1)/h, h_mapSize, w_mapSize, row, col);
 
-			sigmaT = sigmaT_d_NN(r,c);
-			densityMap[tid](row,col) += weight / sigmaT;
+			Vector2d a(rng()*w, h);
+			double dis = sqrt( (pos(0) - a(0)) * (pos(0) - a(0)) + (pos(1) - a(1)) * (pos(1) - a(1)) );
+			double costheta = abs(pos(1) - a(1)) / dis;
+			double newWeight = exp(-sigmaT_d_NN(10, 10) * dis) * (1.0 / (2.0 * PI)) * weight * w * (costheta / dis);
+
+			refl += newWeight;
+			
+			double dir_theta = 2.0 * PI * rng();
+			dir << cos(dir_theta), sin(dir_theta);
+
+			getCoord(pos(0) / w, pos(1) / h, h_sigmaT_d, w_sigmaT_d, r, c);
+			getCoord(pos(0) / w, pos(1) / h, h_mapSize, w_mapSize, row, col);
+
+			sigmaT = sigmaT_d_NN(r, c);
+			densityMap[tid](row, col) += weight / sigmaT;
+
+			//weight *= albedo;
 
 			if (dep <= 10)
 				weight *= albedo;
@@ -170,8 +172,12 @@ int main(int argc, char *argv[]) {
 				if (rng() > albedo) break;
 
 		}
+		reflectance(tid) += refl;
+		reflectance2(tid) += refl * refl;
+
+
 	}
-	
+	 
 	for (i = 0; i < nworkers; ++i)
 		reflectanceTotal += reflectance(i);
 	reflectanceTotal = reflectanceTotal / N_Sample;

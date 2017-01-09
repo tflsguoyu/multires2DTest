@@ -2,9 +2,9 @@ clear; close all; clc
 
 %%
 % filename_list{1} = 'input/sigmaT_binaryRand.csv';
-filename_list{1} = 'input/wool.png';
-filename_list{2} = 'input/silk.png';
-% filename_list{1} = 'input/sigmaT_1_J.csv';
+% filename_list{1} = 'input/wool.png';
+% filename_list{2} = 'input/silk.png';
+filename_list{1} = 'input/sigmaT_1_J.csv';
 
 %%
 for k = 1:length(filename_list)
@@ -12,10 +12,10 @@ for k = 1:length(filename_list)
 
     %  
     scale = 1000;
-    tile = 40;
+    tile = 20;
     albedo = 0.95;
-    NoSamples = 1000000;
-    downScale = 'MAX';
+    NoSamples = 10000000;
+    downScale = 6;
     
     disp('');
     disp([num2str(k) '/' num2str(length(filename_list))]);
@@ -23,7 +23,7 @@ for k = 1:length(filename_list)
     tic;
     [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
     mean_d_list, std_d_list, reflection_list, reflection_stderr_list, insideVis_list, albedo_list]...
-    = multires2DTest(filename,scale,tile,downScale,albedo,NoSamples,'Windows_C','yes');
+    = multires2DTest(filename,scale,tile,downScale,albedo,NoSamples,'Windows_C','no');
     toc
 %     save([filename '_results.mat']);
 %     load([filename '_results.mat']);

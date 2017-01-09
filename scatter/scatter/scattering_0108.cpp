@@ -144,25 +144,25 @@ int main(int argc, char *argv[]) {
 			
 			x = x - t * d;
 
-			if (x(0) < 0.0 || x(0) > w || x(1) < 0.0 || x(1) > h)
+			if (x(1) > h) {
+				double intersectP_x = x(0) + (h - x(1)) * d(0) / d(1);
+				if (intersectP_x > 0 && intersectP_x < w) {
+					reflectance(tid) += weight;
+					reflectance2(tid) += weight * weight;
+				}
 				break;
-
-			Vector2d a(rng()*w, h);
-			double dis = sqrt( (x(0) - a(0)) * (x(0) - a(0)) + (x(1) - a(1)) * (x(1) - a(1)) );
-			double cosphi = abs(x(0) - a(0)) / dis;
-			double newWeight = exp(-sigmaT_d_NN(0, 0) * dis) * (1.0 / (2.0 * PI)) * weight * w * (cosphi / dis);
-
-			reflectance(tid) += newWeight;
-			reflectance2(tid) += newWeight * newWeight;
-
+			}
+			else if (x(0) < 0.0 || x(0) > w || x(1) < 0.0)
+				break;
+			
 			double theta = 2.0 * PI * rng();
 			d << cos(theta), sin(theta);
+			
+			getCoord(x(0)/w, x(1)/h, h_sigmaT_d, w_sigmaT_d, r, c);
+			getCoord(x(0)/w, x(1)/h, h_mapSize, w_mapSize, row, col);
 
-			getCoord(x(0) / w, x(1) / h, h_sigmaT_d, w_sigmaT_d, r, c);
-			getCoord(x(0) / w, x(1) / h, h_mapSize, w_mapSize, row, col);
-
-			sigmaT = sigmaT_d_NN(r, c);
-			densityMap[tid](row, col) += weight / sigmaT;
+			sigmaT = sigmaT_d_NN(r,c);
+			densityMap[tid](row,col) += weight / sigmaT;
 
 			if (dep <= 10)
 				weight *= albedo;
