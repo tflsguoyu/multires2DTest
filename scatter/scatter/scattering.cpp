@@ -20,7 +20,10 @@
 using namespace std;
 using namespace Eigen;
 //using namespace cv;
+
 #define PI 3.1415926535897932384626433832795
+#define woodCock 
+#define nextEvent
 
 int i, j;
 
@@ -118,19 +121,16 @@ int main(int argc, char *argv[]) {
 
 		int r, c;
 		int row, col;
-		double sigmaT, sigmaT_next;
-		Vector2d pos_next;
-		int r_next, c_next;
+		double sigmaT;
 
 		double weight = 1.0;
 		double refl = 0.0;
 
 		for (int dep = 1; dep <= maxDepth; ++dep) {
-
-			// Method 1: 
-			//double t = -log(rng()) / sigmaT_MAX;
-
-			// Method 2: Woodcock
+#ifdef woodCock
+			double sigmaT_next;
+			Vector2d pos_next;
+			int r_next, c_next;
 			double t = 0.0;
 			while (1) {
 				t = t - log(rng()) / sigmaT_MAX;
@@ -142,21 +142,13 @@ int main(int argc, char *argv[]) {
 				if ((sigmaT_next / sigmaT_MAX) > rng())
 					break;
 			}
-			
+#else
+			double t = -log(rng()) / sigmaT_MAX;
+#endif
 			pos = pos - t * dir;
-
+#ifdef nextEvent
 			if (pos(0) < 0.0 || pos(0) > w || pos(1) < 0.0 || pos(1) > h)
 				break;
-
-			Vector2d a(rng()*w, h);
-			double dis = sqrt( (pos(0) - a(0)) * (pos(0) - a(0)) + (pos(1) - a(1)) * (pos(1) - a(1)) );
-			double costheta = abs(pos(1) - a(1)) / dis;
-			double newWeight = exp(-sigmaT_d_NN(10, 10) * dis) * (1.0 / (2.0 * PI)) * weight * w * (costheta / dis);
-
-			refl += newWeight;
-			
-			double dir_theta = 2.0 * PI * rng();
-			dir << cos(dir_theta), sin(dir_theta);
 
 			getCoord(pos(0) / w, pos(1) / h, h_sigmaT_d, w_sigmaT_d, r, c);
 			getCoord(pos(0) / w, pos(1) / h, h_mapSize, w_mapSize, row, col);
@@ -164,18 +156,62 @@ int main(int argc, char *argv[]) {
 			sigmaT = sigmaT_d_NN(r, c);
 			densityMap[tid](row, col) += weight / sigmaT;
 
-			//weight *= albedo;
-
 			if (dep <= 10)
 				weight *= albedo;
 			else
 				if (rng() > albedo) break;
 
+			Vector2d a(rng()*w, h);
+			Vector2d dir_a = a - pos;
+			double dis_a = dir_a.norm();
+			double costheta = abs(pos(1) - a(1)) / dis_a;
+#ifdef woodCock						
+			dir_a = dir_a.normalized();
+			t = 0.0;
+			double newWeight = 0.0;
+			while (1) {
+				t = t - log(rng()) / sigmaT_MAX;
+				pos_next = pos + t * dir_a;
+				if (pos_next(1) > h)
+					newWeight = (1.0 / (2.0 * PI)) * weight * w * (costheta / dis_a);
+					break;
+				getCoord(pos_next(0) / w, pos_next(1) / h, h_sigmaT_d, w_sigmaT_d, r_next, c_next);
+				sigmaT_next = sigmaT_d_NN(r_next, c_next);
+				if ((sigmaT_next / sigmaT_MAX) > rng())
+					break;
+			}
+#else
+			double newWeight = exp(-dis_a * sigmaT_d_NN(0, 0)) * (1.0 / (2.0 * PI)) * weight * w * (costheta / dis_a);
+#endif
+			refl += newWeight;
+#else
+			if (pos(1) > h) {
+				double intersectP_x = pos(0) + (h - pos(1)) * dir(0) / dir(1);
+				if (intersectP_x > 0 && intersectP_x < w) {
+					refl += weight;
+				}
+				break;
+			}
+			else if (pos(0) < 0.0 || pos(0) > w || pos(1) < 0.0)
+				break;
+
+			getCoord(pos(0) / w, pos(1) / h, h_sigmaT_d, w_sigmaT_d, r, c);
+			getCoord(pos(0) / w, pos(1) / h, h_mapSize, w_mapSize, row, col);
+
+			sigmaT = sigmaT_d_NN(r, c);
+			densityMap[tid](row, col) += weight / sigmaT;
+
+			if (dep <= 10)
+				weight *= albedo;
+			else
+				if (rng() > albedo) break;
+#endif
+			double dir_theta = 2.0 * PI * rng();
+			dir << cos(dir_theta), sin(dir_theta);
 		}
+		
 		reflectance(tid) += refl;
 		reflectance2(tid) += refl * refl;
-
-
 	}
 	 
 	for (i = 0; i < nworkers; ++i)
