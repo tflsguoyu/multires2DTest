@@ -2,8 +2,11 @@
 c:\users\gy\documents\eigen-eigen-f562a193118d\eigen\src/Core/arch/CUDA/Half.h : warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
 scattering.cpp(55): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
 scattering.cpp(56): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-scattering.cpp(98): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+scattering.cpp(116): warning C4101: 'newWeight': unreferenced local variable
+scattering.cpp(124): warning C4101: 'sigmaT': unreferenced local variable
+scattering.cpp(123): warning C4101: 'c': unreferenced local variable
+scattering.cpp(123): warning C4101: 'r': unreferenced local variable
   Generating code
-  All 874 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 549 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   scatter.vcxproj -> C:\Users\GY\gyDocuments\multires2DTest\scatter\x64\Release\scatter.exe

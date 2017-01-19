@@ -24,7 +24,11 @@ function [output_reflection,output_reflection_stderr,output_insideVis] ...
             num2str(h_sigmaT_d) ' ' num2str(w_sigmaT_d) ' ' num2str(h_region) ' ' num2str(w_region)]);
     end
     
-    output_insideVis = csvread('output/densityMap.csv');
+    if exist('output/densityMap.csv', 'file') == 2
+        output_insideVis = csvread('output/densityMap.csv');
+    else
+        output_insideVis = zeros(1);
+    end
     output_reflection = csvread('output/reflectance.csv');
     output_reflection_stderr = csvread('output/reflectanceStderr.csv');
     

@@ -1,20 +1,20 @@
 clear; close all; clc
 
 %%
-% filename_list{1} = 'input/sigmaT_binaryRand.csv';
-filename_list{1} = 'input/wool.png';
-% filename_list{2} = 'input/silk.png';
+filename_list{1} = 'input/sigmaT_binaryRand.csv';
+% filename_list{1} = 'input/wool.png';
+% filename_list{1} = 'input/silk.png';
 % filename_list{1} = 'input/sigmaT_1_J.csv';
 
-%%
+%
 for k = 1:length(filename_list)
     filename = filename_list{k};
 
     %  
-    scale = 1000;
-    tile = 40;
+    scale = 100;
+    tile = 20;
     albedo = 0.95;
-    NoSamples = 10000000;
+    NoSamples = 1000000;
     downScale = 'MAX';
     
     disp('');
