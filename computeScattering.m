@@ -17,7 +17,13 @@ function [output_reflection,output_reflection_stderr,output_insideVis] ...
         system(['scatter.exe ' sigmaT_d_filename ' ' num2str(albedo) ' ' num2str(NoSamples) ' ' ...
             num2str(h_sigmaT_d) ' ' num2str(w_sigmaT_d) ' ' num2str(h_region) ' ' num2str(w_region)]);
     end
-    
+
+    if strcmp(platform,'Windows_C_nextEvent')
+    % C++ windows
+        system(['scatter_nextEvent.exe ' sigmaT_d_filename ' ' num2str(albedo) ' ' num2str(NoSamples) ' ' ...
+            num2str(h_sigmaT_d) ' ' num2str(w_sigmaT_d) ' ' num2str(h_region) ' ' num2str(w_region)]);
+    end
+        
     if strcmp(platform,'Linux_C')
     % C++ Linux
         system(['./scatter_linux ' sigmaT_d_filename ' ' num2str(albedo) ' ' num2str(NoSamples) ' ' ...

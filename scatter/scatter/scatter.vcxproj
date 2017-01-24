@@ -21,6 +21,10 @@
   <ItemGroup>
     <ClCompile Include="scattering.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="medium.h" />
+    <ClInclude Include="sampler.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B78759BF-5964-47AE-809A-54CF1BB46C42}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
