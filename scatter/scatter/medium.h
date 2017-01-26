@@ -97,7 +97,7 @@ public:
 		VectorType p1;
 		while (1) {
 			dist = dist - log(sampler.nextSample()) / sigT_MAX;
-			p1 = p - d * dist;
+			p1 = p + d * dist;
 			if (p1[0] < pMin[0] || p1[0] > pMax[0] || p1[1] < pMin[1] || p1[1] > pMax[1]) {
 				return false;
 			}
@@ -135,7 +135,7 @@ public:
 		double attn = 0.0;
 		for (int woodcock_it = 0; woodcock_it < woodCockIteration; ++woodcock_it) {
 			double dist;
-			if (!this->sampleDistance(p1, p2 - p1, sampler, dist)) {
+			if (!this->sampleDistance(p1, (p2 - p1).normalized(), sampler, dist)) {
 				attn += 1.0;
 			}
 		}
@@ -146,10 +146,15 @@ public:
 
 protected:
 	double getSigT(const VectorType &p) const {
-		int r = std::ceil((1.0 - p[1] / pMax[1]) * sigT.rows());
-		int c = std::ceil(p[0] / pMax[0] * sigT.cols());
-		r = r == 0 ? 1 : r; c = c == 0 ? 1 : c;
-		r = r - 1; c = c - 1;
+		
+		int r = static_cast<int>(std::ceil((1.0 - p[1] / pMax[1]) * sigT.rows()));
+		int c = static_cast<int>(std::ceil(p[0] / pMax[0] * sigT.cols()));
+		
+		if (r < 0) r = 0;
+		else if (r >= sigT.rows()) r = static_cast<int>(sigT.rows()) - 1;
+		if (c < 0) c = 0;
+		else if (c >= sigT.cols()) c = static_cast<int>(sigT.cols()) - 1;
+		
 		return sigT(r, c);
 	}
 	

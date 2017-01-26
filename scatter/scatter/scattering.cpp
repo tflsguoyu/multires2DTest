@@ -17,7 +17,7 @@
 
 #include "medium.h"
 
-#define nextEvent
+//#define nextEvent
 
 int i, j;
 
@@ -68,14 +68,13 @@ int main(int argc, char *argv[]) {
 	double reflectanceStderr = 0.0;
 
 	// define medium 
-	//if (sigT.maxCoeff() - sigT.minCoeff() < 0.0000001) {
-	//	Medium<2> *med = new HomogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT(0, 0), albedo);
-	//}
-	//else {
-	//	Medium<2> *med = new HeterogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT, albedo);
-	//}
-	//Medium<2> *med = new HomogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT(0, 0), albedo);
-	Medium<2> *med = new HeterogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT, albedo);
+	Medium<2> *med;
+	if (sigT.maxCoeff() - sigT.minCoeff() < 0.0000001) {
+		med = new HomogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT(0, 0), albedo);
+	}
+	else {
+		med = new HeterogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT, albedo);
+	}
 
 	double receiptorSize = 10;
 
