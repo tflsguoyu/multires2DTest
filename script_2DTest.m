@@ -13,22 +13,28 @@ for k = 1:length(filename_list)
     %  
     scale = 100;
     tile = 20;
-    albedo = 0.8;
+    albedo = 0.95;
     NoSamples = 1000000;
     downScale = 'MAX';
+    receiptorSize = 'MAX';
     
     disp('');
     disp([num2str(k) '/' num2str(length(filename_list))]);
  
     tic;
     [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
-    mean_d_list, std_d_list, reflection_list, reflection_stderr_list, insideVis_list, albedo_list]...
-    = multires2DTest(filename,scale,tile,downScale,albedo,NoSamples,'Windows_C','no');
+        mean_d_list, std_d_list, reflection_list, ...
+        reflection_stderr_list, insideVis_list, albedo_list]...
+    = multires2DTest(filename,scale,tile,downScale,albedo,NoSamples,...
+        receiptorSize,'Windows_C','no');
     toc
+    % next event
     tic;
     [downscale_list_n, sigmaT_d_list_n, logfft_d_list_n, fftcurve_d_list_n, ...
-    mean_d_list_n, std_d_list_n, reflection_list_n, reflection_stderr_list_n, insideVis_list_n, albedo_list_n]...
-    = multires2DTest(filename,scale,tile,downScale,albedo,NoSamples,'Windows_C_nextEvent','no');
+        mean_d_list_n, std_d_list_n, reflection_list_n, ...
+        reflection_stderr_list_n, insideVis_list_n, albedo_list_n]...
+    = multires2DTest(filename,scale,tile,downScale,albedo,NoSamples,...
+        receiptorSize,'Windows_C_nextEvent','no');
     toc
     
 %     save([filename '_results.mat']);
