@@ -131,7 +131,7 @@ public:
 
 	double evalAttenuation(const VectorType &p1, const VectorType &p2, Sampler &sampler) const
 	{
-		int woodCockIteration = 10;
+		int woodCockIteration = 1;
 		double attn = 0.0;
 		for (int woodcock_it = 0; woodcock_it < woodCockIteration; ++woodcock_it) {
 			double dist;

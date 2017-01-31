@@ -16,6 +16,9 @@ public:
 	virtual VectorType sampleDirection(const VectorType &p, const VectorType &d,
 		Sampler &sampler) const = 0;
 
+	virtual double getAlbedo(const VectorType &p, const VectorType &d,
+		Sampler &sampler) const = 0;
+
 	virtual bool intersectReceiptor(const VectorType &p, const VectorType &d,
 		Sampler &sampler, const double &receiptorWidth) const = 0;
 
@@ -31,8 +34,8 @@ template <int ndim>
 class HomogeneousMedium : public Medium<ndim>
 {
 public:
-	typedef typename Medium<ndim> Parent;
-	using Parent::VectorType;
+	//typedef typename Medium<ndim> Parent;
+	//using Parent::VectorType;
 
 	HomogeneousMedium(const VectorType &_pMin, const VectorType &_pMax, const double &_sigT, const double &_albedo)
 		: pMin(_pMin), pMax(_pMax), sigT(_sigT), albedo(_albedo) {}
@@ -54,6 +57,11 @@ public:
 	{
 		double theta = 2.0 * PI * sampler.nextSample();
 		return VectorType(std::cos(theta), std::sin(theta));
+	}
+
+	double getAlbedo(const VectorType &p, const VectorType &d, Sampler &sampler) const
+	{
+		return albedo;
 	}
 
 	bool intersectReceiptor(const VectorType &p, const VectorType &d, Sampler &sampler, const double &receiptorWidth) const
@@ -88,6 +96,9 @@ template <int ndim>
 class HeterogeneousMedium : public Medium<ndim>
 {
 public:
+	//typedef typename Medium<ndim> Parent;
+	//using Parent::VectorType;
+
 	HeterogeneousMedium(const VectorType &_pMin, const VectorType &_pMax, const Eigen::MatrixXd &_sigT, const double &_albedo)
 		: pMin(_pMin), pMax(_pMax), sigT(_sigT), sigT_MAX(_sigT.maxCoeff()), albedo(_albedo) {}
 
@@ -111,6 +122,11 @@ public:
 	{
 		double theta = 2.0 * PI * sampler.nextSample();
 		return VectorType(std::cos(theta), std::sin(theta));
+	}
+
+	double getAlbedo(const VectorType &p, const VectorType &d, Sampler &sampler) const
+	{
+		return albedo;
 	}
 
 	bool intersectReceiptor(const VectorType &p, const VectorType &d, Sampler &sampler, const double &receiptorWidth) const
@@ -142,8 +158,6 @@ public:
 		return attn / static_cast<double>(woodCockIteration);
 	}
 
-
-
 protected:
 	double getSigT(const VectorType &p) const {
 		
@@ -162,4 +176,39 @@ protected:
 	Eigen::MatrixXd sigT;
 	double sigT_MAX;
 	double albedo;
+};
+
+
+template <int ndim>
+class multiHeterogeneousMedium : public HeterogeneousMedium<ndim>
+{
+public:
+
+	//multiHeterogeneousMedium(const VectorType &_pMin, const VectorType &_pMax, const Eigen::MatrixXd &_sigT, const Eigen::VectorXd &_albedo, const int &_numOfBlock)
+	//	: pMin(_pMin), pMax(_pMax), sigT(_sigT), sigT_MAX(_sigT.maxCoeff()), albedoList(_albedo), numOfBlock(_numOfBlock) {}
+
+	multiHeterogeneousMedium(const VectorType &_pMin, const VectorType &_pMax, const Eigen::MatrixXd &_sigT, const Eigen::VectorXd &_albedo, const int &_numOfBlock)
+		: HeterogeneousMedium(_pMin, _pMax, _sigT, 0.0), albedoList(_albedo), numOfBlock(_numOfBlock) {}
+
+	bool intersectReceiptor(const VectorType &p, const VectorType &d, Sampler &sampler, const double &receiptorWidth, int &intersectID) const
+	{
+		if (d[1] > 0) {
+			double intersectP_x = p[0] + (pMax[1] - p[1]) * d[0] / d[1];
+			if (intersectP_x > (pMax[0] - receiptorWidth) / 2 && intersectP_x < (pMax[0] + receiptorWidth) / 2) {
+				intersectID = static_cast<int>(std::ceil(intersectP_x / ((pMax[0] - pMin[0]) / numOfBlock)));
+				return true;
+			}
+		}
+		return false;
+	}
+
+	double getAlbedo(const VectorType &p, const VectorType &d, Sampler &sampler) const
+	{
+		int albedoID = static_cast<int>(std::ceil(p[0] / ((pMax[0] - pMin[0]) / numOfBlock)));
+		return albedoList[albedoID-1];
+	}
+
+protected:
+	int numOfBlock;
+	Eigen::VectorXd albedoList;
 };

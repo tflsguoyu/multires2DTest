@@ -42,6 +42,8 @@ int main(int argc, char *argv[]) {
 	const int w_sigT = std::atoi(argv[5]);
 	const double y = std::atof(argv[6]);
 	const double x = std::atof(argv[7]);
+	const double receiptorSize = std::atof(argv[8]);
+
 
 	// read sigT from csv
 	Eigen::MatrixXd sigT(h_sigT, w_sigT);
@@ -76,9 +78,7 @@ int main(int argc, char *argv[]) {
 		med = new HeterogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT, albedo);
 	}
 
-	double receiptorSize = 10;
-
-	// 
+	// core computring
 #pragma omp parallel for //schedule(dynamic, 1)
 	for (int sample = 1; sample <= N_Sample; ++sample) {
 		int tid = omp_get_thread_num();
