@@ -196,7 +196,8 @@ int main(int argc, char *argv[]) {
 
 	for (i = 0; i < block; ++i)
 		reflectanceStderr[i] = sqrt(reflectanceTotal2[i] - reflectanceTotal[i] * reflectanceTotal[i]) / sqrt(N_Sample);
-	reflectanceStderrTotal = reflectanceStderr.sum();
+	
+	reflectanceStderrTotal = sqrt(reflectanceTotalTotal2 - reflectanceTotalTotal * reflectanceTotalTotal) / sqrt(N_Sample);
 
 	std::ofstream outfile;
 

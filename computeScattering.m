@@ -51,6 +51,9 @@ function [output_reflection,output_reflection_stderr,output_insideVis] ...
     output_reflection = csvread('output/reflectance.csv');
     output_reflection_stderr = csvread('output/reflectanceStderr.csv');
     
+    % remove boundary block
+    output_reflection(1) = sum(output_reflection(3:end-1));
+    
     guoyu = 1;
     
 

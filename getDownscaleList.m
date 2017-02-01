@@ -2,7 +2,7 @@ function output = getDownscaleList(input, max_downscale)
     
     if strcmp(max_downscale, 'MAX');
         [h, w] = size(input);
-        max_downscale = ceil(log2(max(h, w)))-4;
+        max_downscale = ceil(log2(max(h, w)));
     end
     
     output = zeros(1,max_downscale+1);
