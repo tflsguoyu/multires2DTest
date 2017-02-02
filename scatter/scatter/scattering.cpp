@@ -45,36 +45,6 @@ int main(int argc, char *argv[]) {
 	const int block = std::atoi(argv[8]);
 	std::ifstream fileAlbedo(argv[9]);
 
-	//const double albedo_MAX = std::atof(argv[9]);
-	//const double albedo_MIN = std::atof(argv[10]);
-
-	//Eigen::VectorXd albedoList(block);
-	//double step = (albedo_MAX - albedo_MIN) / (block - 1);
-	//for (i = 0; i < block-1; ++i)
-	//	albedoList[i] = albedo_MAX - i * step;
-	//albedoList[block-1] = albedo_MIN;
-	//std::cout << albedoList;
-	//albedoList << 0.95, 0.95, 0.95, 0.95,
-	//	0.95, 0.95, 0.95, 0.95,
-	//	0.95, 0.95, 0.95, 0.95,
-	//	0.95, 0.95, 0.95, 0.95,
-	//	0.95, 0.95, 0.95, 0.95;
-	//albedoList << 0.95, 0.95, 0.95, 0.95,
-	//	0.90, 0.90, 0.90, 0.90,
-	//	0.85, 0.85, 0.85, 0.85,
-	//	0.80, 0.80, 0.80, 0.80,
-	//	0.75, 0.75, 0.75, 0.75;
-	//albedoList << 0.70, 0.70, 0.70, 0.70,
-	//	0.65, 0.65, 0.65, 0.65,
-	//	0.60, 0.60, 0.60, 0.60,
-	//	0.55, 0.55, 0.55, 0.55,
-	//	0.50, 0.50, 0.50, 0.50;
-	//albedoList << 0.95, 0.95, 0.90, 0.90,
-	//	0.85, 0.85, 0.80, 0.80,
-	//	0.75, 0.75, 0.70, 0.70,
-	//	0.65, 0.65, 0.60, 0.60,
-	//	0.55, 0.55, 0.50, 0.50;
-
 	// read albedo list
 	Eigen::VectorXd albedoList(block);
 	for (i = 0; i < 1; ++i) {
@@ -125,7 +95,8 @@ int main(int argc, char *argv[]) {
 	//else {
 	//	med = new HeterogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT, albedo);
 	//}
-	multiHeterogeneousMedium<2> *med = new multiHeterogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT, albedoList, block);
+	multiHeterogeneousMedium<2> *med;
+	med = new multiHeterogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT, albedoList, block);
 
 	// core computing
 #pragma omp parallel for //schedule(dynamic, 1)

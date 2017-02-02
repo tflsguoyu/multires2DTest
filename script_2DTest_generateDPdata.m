@@ -21,7 +21,7 @@ for k = 1:length(iter)
     csvwrite(filename, sigT);
 
 %%  
-    scale = 100;
+    scale = 200;
     tile = 500;
     downScale = 1;
     NoSamples = 1000000;
@@ -29,8 +29,8 @@ for k = 1:length(iter)
     optimazation = 'yes';
     numOfBlock = tile;
     
-    albedoMax = 0.95;
-    albedoMin = 0.95;
+    albedoMax = 0.65;
+    albedoMin = 0.65;
     albedo = albedoMax*ones(1,numOfBlock);
 
 %%    
@@ -49,7 +49,7 @@ for k = 1:length(iter)
 %% save to file 
     output = [arr,scale,tile,NoSamples,albedoMax, ...
         reflection_list(1,1),reflection_list(2,1),albedo_k_list(2)];
-    dlmwrite('results/binary10bit_1.csv',output,'delimiter',',','-append');
+    dlmwrite('results/binary10bit_0.65_200.csv',output,'delimiter',',','-append');
 
 
 

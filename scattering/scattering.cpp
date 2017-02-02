@@ -11,190 +11,179 @@
 #include <ctime>
 #include <iomanip>
 
-#include <Eigen/Dense>
-
 //#include <opencv2/core/core.hpp>
 //#include <opencv2/highgui/highgui.hpp>
 //#include <opencv2/imgproc/imgproc.hpp>
 
-using namespace std;
-using namespace Eigen;
-//using namespace cv;
-#define PI 3.1415926535897932384626433832795
+#include "medium.h"
+
+//#define nextEvent
 
 int i, j;
 
-/*
- * Thread-safe random number generator
- */
-
-struct RNG {
-    RNG() : distrb(0.0, 1.0), engines() {}
-
-    void init(int nworkers) {
-        std::random_device rd;
-        engines.resize(nworkers);
-        for ( int i = 0; i < nworkers; ++i )
-            engines[i].seed(rd());
-    }
-
-    double operator()() {
-        int id = omp_get_thread_num();
-        return distrb(engines[id]);
-    }
-
-    std::uniform_real_distribution<double> distrb;
-    std::vector<std::mt19937> engines;
-} rng;
-
-void getCoord(double x, double y, int H, int W, int &r, int &c) {
-	
-	r = ceil((1.0 - y)*H);
-	c = ceil(x * W);
-	r = r == 0 ? 1 : r; c = c == 0 ? 1 : c;
-	r = r - 1; c = c - 1;
-}
-
 int main(int argc, char *argv[]) {
-    int nworkers = omp_get_num_procs();
+
+	// Thread protect random number generate
+	int nworkers = omp_get_num_procs();
     omp_set_num_threads(nworkers);
-	rng.init(nworkers);	
 
-	ifstream file(argv[1]);
-	const double albedo = atof(argv[2]);
-	const int N_Sample = atoi(argv[3]);
-	const int h_sigmaT_d = atoi(argv[4]);
-	const int w_sigmaT_d = atoi(argv[5]);
-	const double h = atof(argv[6]);
-	const double w = atof(argv[7]);
-
-	// read csv
-	MatrixXd sigmaT_d_NN(h_sigmaT_d, w_sigmaT_d);
-	for (int i = 0; i < h_sigmaT_d; ++i)
+	std::vector<Sampler> samplers;
+	samplers.resize(nworkers);
 	{
-		string line;
-		getline(file, line);
-		//if (!file.good())
-		//	break;
+		std::random_device rd;
+		for (int i = 0; i < nworkers; ++i) samplers[i].init(rd());
+	}
 
-		stringstream iss(line);
-		for (int j = 0; j < w_sigmaT_d; ++j)
-		{
-			string val;
-			getline(iss, val, ',');
-			stringstream convertor(val);
-			convertor >> sigmaT_d_NN(i,j);
+	// UI
+	std::ifstream file(argv[1]);
+	const int N_Sample = std::atoi(argv[2]);
+	const int h_sigT = std::atoi(argv[3]);
+	const int w_sigT = std::atoi(argv[4]);
+	const double y = std::atof(argv[5]);
+	const double x = std::atof(argv[6]);
+	const double receiptorSize = std::atof(argv[7]);
+	const int block = std::atoi(argv[8]);
+	std::ifstream fileAlbedo(argv[9]);
+
+	// read albedo list
+	Eigen::VectorXd albedoList(block);
+	for (i = 0; i < 1; ++i) {
+		std::string line;
+		std::getline(fileAlbedo, line);
+
+		std::stringstream iss(line);
+		for (j = 0; j < block; ++j) {
+			std::string val;
+			std::getline(iss, val, ',');
+			std::stringstream convertor(val);
+			convertor >> albedoList[j];
+		}
+	}
+	
+	// read sigT from csv
+	Eigen::MatrixXd sigT(h_sigT, w_sigT);
+	for (i = 0; i < h_sigT; ++i) {
+		std::string line;
+		std::getline(file, line);
+
+		std::stringstream iss(line);
+		for (j = 0; j < w_sigT; ++j) {
+			std::string val;
+			std::getline(iss, val, ',');
+			std::stringstream convertor(val);
+			convertor >> sigT(i,j);
 		}
 	}
 
-	// compute MAX of sigmaT
-	double sigmaT_MAX = sigmaT_d_NN.maxCoeff();
+	// define output reflectance
+	double reflectanceTotalTotal = 0.0;
+	Eigen::VectorXd reflectanceTotal = Eigen::VectorXd::Zero(block);
+	Eigen::MatrixXd reflectance = Eigen::MatrixXd::Zero(nworkers, block);
 
-	// create density map 
-	int h_mapSize = 32;
-	int w_mapSize = h_mapSize * round(w / h);
-	MatrixXd densityMapTotal = MatrixXd::Zero(h_mapSize, w_mapSize);
-	vector<MatrixXd> densityMap(nworkers);
-	for (i = 0; i < nworkers; ++i) 
-		densityMap[i] = MatrixXd::Zero(h_mapSize, w_mapSize);
+	double reflectanceTotalTotal2 = 0.0;
+	Eigen::VectorXd reflectanceTotal2 = Eigen::VectorXd::Zero(block);
+	Eigen::MatrixXd reflectance2 = Eigen::MatrixXd::Zero(nworkers, block);
 
-	// create output reflectance
-	double reflectanceTotal = 0.0;
-	VectorXd reflectance = VectorXd::Zero(nworkers);
+	double reflectanceStderrTotal = 0.0;
+	Eigen::VectorXd reflectanceStderr = Eigen::VectorXd::Zero(block);
 
+	// define medium 
+	//Medium<2> *med;
+	//if (sigT.maxCoeff() - sigT.minCoeff() < 0.0000001) {
+	//	med = new HomogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT(0, 0), albedo);
+	//}
+	//else {
+	//	med = new HeterogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT, albedo);
+	//}
+	multiHeterogeneousMedium<2> *med;
+	med = new multiHeterogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT, albedoList, block);
 
-
+	// core computing
 #pragma omp parallel for //schedule(dynamic, 1)
 	for (int sample = 1; sample <= N_Sample; ++sample) {
-
 		int tid = omp_get_thread_num();
+		Sampler &sampler = samplers[tid];
 
 		const int maxDepth = 1000;
-		Vector2d x(rng()*w, h);
-		Vector2d d(0.0, 1.0);
 
-		int r, c;
-		int row, col;
-		double sigmaT, sigmaT_next;
-		Vector2d x_next;
-		int r_next, c_next;
+		// Initial postion and direction
+		Eigen::Vector2d pos(sampler.nextSample()*x, y);
+		Eigen::Vector2d dir(0.0, -1.0);
 
-		double weight = 1.0 / N_Sample;
+		double weight = 1.0;
+		double refl = 0.0;
+		double newWeight = 0.0;
+		int intersectID = 0;;
 
 		for (int dep = 1; dep <= maxDepth; ++dep) {
+			// sample distance
+			double dist;
+			if (med->sampleDistance(pos, dir, sampler, dist)) {
+				// update new position and direction
+				pos = pos + dir * dist;
+				dir = med->sampleDirection(pos, dir, sampler);
 
-			// Method 1: 
-			//double t = -log(rng()) / sigmaT_MAX;
-
-			// Method 2: Woodcock
-			double t = 0.0;
-			while (1) {
-				t = t - log(rng()) / sigmaT_MAX;
-				x_next = x - t * d;
-				if (x_next(0) < 0 || x_next(0) > w || x_next(1) < 0 || x_next(1) > h)
-					break;
-				getCoord(x_next(0)/w, x_next(1)/h, h_sigmaT_d, w_sigmaT_d, r_next, c_next);
-				sigmaT_next = sigmaT_d_NN(r_next,c_next);
-				if ((sigmaT_next / sigmaT_MAX) > rng())
-					break;
-			}
-			
-			x = x - t * d;
-
-			if (x(1) > h) {
-				double intersectP_x = x(0) + (h - x(1)) * d(0) / d(1);
-				if (intersectP_x > 0 && intersectP_x < w) {
-					reflectance(tid) += weight;
-					break;
-				}
+				if (dep <= 10)
+					weight *= med->getAlbedo(pos, dir, sampler);
 				else
-					break;
+					if (sampler.nextSample() > med->getAlbedo(pos, dir, sampler))
+						break;
+#ifdef nextEvent
+				// sample a point "a" on receiptor
+				Eigen::Vector2d a = med->sampleOnReceiptor(sampler, receiptorSize);
+				double disToA = (a - pos).norm();
+				double costheta = std::abs(pos(1) - a(1)) / disToA;
+				double newWeight = med->evalAttenuation(pos, a, sampler) * (1.0 / (2.0 * PI)) * weight * receiptorSize * (costheta / disToA);
+				refl += newWeight;
 			}
-			else if (x(0) < 0.0 || x(0) > w || x(1) < 0.0)
+			else {
 				break;
-			
-			double theta = 2.0 * PI * rng();
-			d << cos(theta), sin(theta);
-			
-			getCoord(x(0)/w, x(1)/h, h_sigmaT_d, w_sigmaT_d, r, c);
-			getCoord(x(0)/w, x(1)/h, h_mapSize, w_mapSize, row, col);
-
-			sigmaT = sigmaT_d_NN(r,c);
-			densityMap[tid](row,col) += weight / sigmaT;
-
-			if (dep <= 10)
-				weight *= albedo;
-			else
-				if (rng() > albedo) break;
-
+			}
 		}
-	}
-	
-	for (i = 0; i < nworkers; ++i)
-		reflectanceTotal += reflectance(i);
-	
-	for (i = 0; i < nworkers; ++i)
-		densityMapTotal += densityMap[i];
-
-	ofstream outfile;
-	outfile.open("output/densityMap.csv");
-	for (i = 0; i < h_mapSize; ++i)
-	{
-		outfile << fixed;
-		outfile << setprecision(15) << densityMapTotal(i,0);
-
-		for (j = 1; j < w_mapSize; ++j)
-		{
-			outfile << "," << setprecision(15) << densityMapTotal(i,j);
+#else
+			}
+			else {
+				if (med->intersectReceiptor(pos, dir, sampler, receiptorSize, intersectID)) {
+				//if (med->intersectReceiptor(pos, dir, sampler, receiptorSize)) {
+					refl = weight;
+				}
+				break;
+			}
 		}
-
-		outfile << endl;
+#endif
+					
+		// for each sample ray, we compute a refl and add them up
+		if (intersectID != 0) reflectance(tid, intersectID-1) += refl;
+		if (intersectID != 0) reflectance2(tid, intersectID-1) += refl * refl;
 	}
-	outfile.close();
+	 
+	reflectanceTotal = reflectance.colwise().sum();
+	reflectanceTotal = reflectanceTotal / N_Sample;
+	reflectanceTotalTotal = reflectanceTotal.sum();
+
+	reflectanceTotal2 = reflectance2.colwise().sum();
+	reflectanceTotal2 = reflectanceTotal2 / N_Sample;
+	reflectanceTotalTotal2 = reflectanceTotal2.sum();
+
+	for (i = 0; i < block; ++i)
+		reflectanceStderr[i] = sqrt(reflectanceTotal2[i] - reflectanceTotal[i] * reflectanceTotal[i]) / sqrt(N_Sample);
+	
+	reflectanceStderrTotal = sqrt(reflectanceTotalTotal2 - reflectanceTotalTotal * reflectanceTotalTotal) / sqrt(N_Sample);
+
+	std::ofstream outfile;
 
 	outfile.open("output/reflectance.csv");
-	outfile << fixed;
-	outfile << setprecision(15) << reflectanceTotal;
+	outfile << std::fixed;
+	outfile << std::setprecision(15) << reflectanceTotalTotal;
+	for (i = 0; i < block; ++i)
+		outfile << "," << std::setprecision(15) << reflectanceTotal[i];
+	outfile.close();
+
+	outfile.open("output/reflectanceStderr.csv");
+	outfile << std::fixed;
+	outfile << std::setprecision(15) << reflectanceStderrTotal;
+	for(i = 0; i < block; ++i)
+		outfile << "," << std::setprecision(15) << reflectanceStderr[i];
 	outfile.close();
 
 	return 0;
