@@ -1,8 +1,8 @@
 clear; close all; clc
 
 %%
-% filename_list{1} = 'input/sigmaT_binaryRand.csv';
-filename_list{1} = 'input/sigmaT_binaryRand_rotate.csv';
+filename_list{1} = 'input/sigmaT_binaryRand.csv';
+% filename_list{1} = 'input/sigmaT_binaryRand_rotate.csv';
 
 % filename_list{1} = 'input/wool.png';
 % filename_list{2} = 'input/silk.png';

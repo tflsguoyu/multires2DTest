@@ -3,7 +3,7 @@ clear; close all; clc
 %%
 
 iter = [0:1023];
-for k = 1:length(iter)
+for k = 900:length(iter)
     %% generate 10bits binary array
     arr10bits = dec2bin(iter(k));
     bits = length(arr10bits);
@@ -28,6 +28,7 @@ for k = 1:length(iter)
     receiptorSize = 'MAX';
     optimazation = 'yes';
     numOfBlock = tile;
+    platform = 'Windows_C';
     
     albedoMax = 0.65;
     albedoMin = 0.65;
@@ -43,7 +44,7 @@ for k = 1:length(iter)
         mean_d_list, std_d_list, reflection_list, reflection_stderr_list, ...
         reflectionOptimize_list, insideVis_list, albedo_k_list]...
     = multires2DTest(filename,scale,tile,downScale,albedo,NoSamples,...
-        receiptorSize,'Windows_C',optimazation,numOfBlock);
+        receiptorSize,platform,optimazation,numOfBlock);
     toc
     
 %% save to file 

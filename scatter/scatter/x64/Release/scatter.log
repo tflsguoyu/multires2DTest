@@ -1,6 +1,0 @@
-﻿  scattering.cpp
-c:\users\gy\documents\eigen-eigen-f562a193118d\eigen\src/Core/arch/CUDA/Half.h : warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
-  Generating code
-  All 951 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
-  Finished generating code
-  scatter.vcxproj -> C:\Users\GY\gyDocuments\multires2DTest\scatter\x64\Release\scatter.exe
