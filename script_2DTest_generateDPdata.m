@@ -3,7 +3,7 @@ clear; close all; clc
 %%
 
 iter = [0:1023];
-for k = 900:length(iter)
+for k = 1:length(iter)
     %% generate 10bits binary array
     arr10bits = dec2bin(iter(k));
     bits = length(arr10bits);
@@ -21,7 +21,7 @@ for k = 900:length(iter)
     csvwrite(filename, sigT);
 
 %%  
-    scale = 200;
+    scale = 100;
     tile = 500;
     downScale = 1;
     NoSamples = 1000000;
@@ -30,8 +30,8 @@ for k = 900:length(iter)
     numOfBlock = tile;
     platform = 'Windows_C';
     
-    albedoMax = 0.65;
-    albedoMin = 0.65;
+    albedoMax = 0.95;
+    albedoMin = 0.95;
     albedo = albedoMax*ones(1,numOfBlock);
 
 %%    
@@ -50,7 +50,7 @@ for k = 900:length(iter)
 %% save to file 
     output = [arr,scale,tile,NoSamples,albedoMax, ...
         reflection_list(1,1),reflection_list(2,1),albedo_k_list(2)];
-    dlmwrite('results/binary10bit_0.65_200.csv',output,'delimiter',',','-append');
+    dlmwrite('results/binary10bit_0.95_100.csv',output,'delimiter',',','-append');
 
 
 
