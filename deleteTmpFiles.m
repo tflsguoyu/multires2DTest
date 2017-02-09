@@ -4,6 +4,7 @@ function deleteTmpFiles()
     filename_list{2} = 'output/reflectance.csv';
     filename_list{3} = 'output/reflectanceStderr.csv';
     filename_list{4} = 'output/densityMap.csv';
+    filename_list{5} = 'output/albedo.csv';
     
     for i = 1: length(filename_list)
         if exist(filename_list{i}, 'file')==2

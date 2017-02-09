@@ -2,6 +2,7 @@ import numpy as np
 
 def loadSigmaT(filename):
     
+    output = 1;
     ext = filename[-3:]
     
     if ext == 'csv':

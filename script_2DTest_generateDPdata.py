@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 from multires2DTest import multires2DTest
 
@@ -8,7 +9,7 @@ def dec2bin(x):
     return bin(x)[2:];
 
 fullBits = 10;
-for iter in range(2):
+for iter in range(4):
     # generate 10bits binary array
     arr10bits = dec2bin(iter); 
     bits = len(arr10bits);
@@ -27,7 +28,7 @@ for iter in range(2):
     # parameters  
     scale = 100;
     tile = 500;
-    downScale = 'MAX';
+    downScale = 2;
     NoSamples = 1000000;
     receiptorSize = 'MAX';
     optimazation = 'yes';

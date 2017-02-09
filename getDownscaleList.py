@@ -7,8 +7,8 @@ def getDownscaleList(input, max_downscale):
         (h, w) = np.shape(input);
         max_downscale = math.ceil(math.log2(max(h, w)));
 
-    output = np.zeros((1,max_downscale));
+    output = np.zeros((max_downscale));
     for i in range(max_downscale):
-        output[0,i] = pow(2,i);
+        output[i] = pow(2,i);
     
     return output;
