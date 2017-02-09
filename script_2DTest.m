@@ -93,7 +93,7 @@ for k = 1:length(filename_list)
         mean_d_list, std_d_list, reflection_list, reflection_stderr_list, ...
         reflectionOptimize_list, insideVis_list, albedo_k_list]...
     = multires2DTest(filename,scale,tile,downScale,albedo,NoSamples,...
-        receiptorSize,'Windows_C',optimazation,numOfBlock);
+        receiptorSize,'Linux_C',optimazation,numOfBlock);
     toc
     
     % next event
@@ -112,6 +112,40 @@ for k = 1:length(filename_list)
 
     N = length(downscale_list);
 
+    
+    
+        %% refl all
+    figure(1);
+    errorbar(log2(downscale_list),reflection_list(:,1),1.96*reflection_stderr_list(:,1),'r--','LineWidth',1); hold on;
+    plot(log2(downscale_list),reflection_list(:,1),'b--','LineWidth',1);
+
+    xlabel('log downsampleScale');
+    ylabel('reflectance');
+    title(['Scale = ' num2str(scale) ...
+        ' Tile = ' num2str(tile) ...
+        ' Albedo = ' num2str(albedoMax) '-' num2str(albedoMin) ...
+        ' NoSamples = ' num2str(NoSamples)]);
+    grid on;
+    
+    %% refl each
+    figure;
+    cc = jet(numOfBlock);
+    for i = 2: numOfBlock-1
+        plot(log2(downscale_list),reflection_list(:,i+1),'LineWidth',1,'Color',cc(i,:)); hold on;
+        legendInfo{i-1} = ['Block ' num2str(i)];
+    end
+    xlabel('log downsampleScale');
+    ylabel('reflectance');
+    title(['Scale = ' num2str(scale) ...
+        ' Tile = ' num2str(tile) ...
+        ' Albedo = ' num2str(albedoMax) '-' num2str(albedoMin) ...
+        ' NoSamples = ' num2str(NoSamples)]);
+    grid on;  
+    legend(legendInfo);
+
+%%
+    
+    
 %     figure;
 %     for i = 1: N        
 %         sigmaT_d_this = sigmaT_d_list{i};
@@ -143,82 +177,82 @@ for k = 1:length(filename_list)
 %     end
     
     
-    figure;
-    errorbar(log2(downscale_list),reflection_list(:,1),1.96*reflection_stderr_list(:,1),'b--','LineWidth',2); hold on;
-    plot(log2(downscale_list),reflection_list(:,1),'b--','LineWidth',2);
-    axis([0 N 0.3 0.6])
-
-    if strcmp(nextEvent,'yes')
-        errorbar(log2(downscale_list_n),reflection_list_n(:,1),1.96*reflection_stderr_list_n(:,1),'r','LineWidth',2); hold on;
-        plot(log2(downscale_list_n),reflection_list_n(:,1),'r','LineWidth',2);
-    end
-    
-    xlabel('log downsampleScale');
-    ylabel('reflectance');
-    title(['Scale = ' num2str(scale) ...
-        ' Tile = ' num2str(tile) ...
-        ' Albedo = ' num2str(albedoMax) '-' num2str(albedoMin) ...
-        ' NoSamples = ' num2str(NoSamples)]);
-    grid on;
-    
-    order = csvread('input/sigmaT_combine1_order.csv');
-    figure;
-    cc = jet(numOfBlock);
-    for i = 1: numOfBlock
-        plot(log2(downscale_list),reflection_list(:,i+1),'LineWidth',2,'Color',cc(i,:)); hold on;
-        legendInfo{i} = ['Block ' num2str(i)];
-    end
-    xlabel('log downsampleScale');
-    ylabel('reflectance');
-    title(['Scale = ' num2str(scale) ...
-        ' Tile = ' num2str(tile) ...
-        ' Albedo = ' num2str(albedoMax) '-' num2str(albedoMin) ...
-        ' NoSamples = ' num2str(NoSamples)]);
-    grid on;  
-    legend(legendInfo);
-  
-    
-    figure;
-    %errorbar(log2(downscale_list),reflectionOptimize_list(:,1),1.96*reflection_stderr_list(:,1),'b--','LineWidth',2); hold on;
-    plot(log2(downscale_list),reflectionOptimize_list(:,1),'b--','LineWidth',2);
-
-    if strcmp(nextEvent,'yes')
-        %errorbar(log2(downscale_list_n),reflection_list_n(:,1),1.96*reflection_stderr_list_n(:,1),'r','LineWidth',2); hold on;
-        plot(log2(downscale_list_n),reflection_list_n(:,1),'r','LineWidth',2);
-    end
-    
-    xlabel('log downsampleScale');
-    ylabel('reflectance');
-    title(['Scale = ' num2str(scale) ...
-        ' Tile = ' num2str(tile) ...
-        ' Albedo = ' num2str(albedoMax) '-' num2str(albedoMin) ...
-        ' NoSamples = ' num2str(NoSamples)]);
-    grid on;
-   
-    order = csvread('input/sigmaT_combine1_order.csv');
-    figure;
-    cc = jet(numOfBlock);
-    for i = 1: numOfBlock
-        plot(log2(downscale_list),reflectionOptimize_list(:,i+1),'LineWidth',2,'Color',cc(i,:)); hold on;
-        legendInfo{i} = ['Block ' num2str(i)];
-    end
-    xlabel('log downsampleScale');
-    ylabel('reflectance');
-    title(['Scale = ' num2str(scale) ...
-        ' Tile = ' num2str(tile) ...
-        ' Albedo = ' num2str(albedoMax) '-' num2str(albedoMin) ...
-        ' NoSamples = ' num2str(NoSamples)]);
-    grid on;  
-    legend(legendInfo);   
-    
-    figure;
-    plot(log2(downscale_list),albedo_k_list,'*-','LineWidth',2);
-    xlabel('log downsampleScale');
-    ylabel('albedo');
-    title(['Scale = ' num2str(scale) ...
-        ' Tile = ' num2str(tile) ...
-        ' Albedo_k = ' num2str(albedoMax) '-' num2str(albedoMin) ...
-        ' NoSamples = ' num2str(NoSamples)]);
-    grid on;
+%     figure;
+%     errorbar(log2(downscale_list),reflection_list(:,1),1.96*reflection_stderr_list(:,1),'b--','LineWidth',2); hold on;
+%     plot(log2(downscale_list),reflection_list(:,1),'b--','LineWidth',2);
+%     axis([0 N 0.3 0.6])
+% 
+%     if strcmp(nextEvent,'yes')
+%         errorbar(log2(downscale_list_n),reflection_list_n(:,1),1.96*reflection_stderr_list_n(:,1),'r','LineWidth',2); hold on;
+%         plot(log2(downscale_list_n),reflection_list_n(:,1),'r','LineWidth',2);
+%     end
+%     
+%     xlabel('log downsampleScale');
+%     ylabel('reflectance');
+%     title(['Scale = ' num2str(scale) ...
+%         ' Tile = ' num2str(tile) ...
+%         ' Albedo = ' num2str(albedoMax) '-' num2str(albedoMin) ...
+%         ' NoSamples = ' num2str(NoSamples)]);
+%     grid on;
+%     
+%     order = csvread('input/sigmaT_combine1_order.csv');
+%     figure;
+%     cc = jet(numOfBlock);
+%     for i = 1: numOfBlock
+%         plot(log2(downscale_list),reflection_list(:,i+1),'LineWidth',2,'Color',cc(i,:)); hold on;
+%         legendInfo{i} = ['Block ' num2str(i)];
+%     end
+%     xlabel('log downsampleScale');
+%     ylabel('reflectance');
+%     title(['Scale = ' num2str(scale) ...
+%         ' Tile = ' num2str(tile) ...
+%         ' Albedo = ' num2str(albedoMax) '-' num2str(albedoMin) ...
+%         ' NoSamples = ' num2str(NoSamples)]);
+%     grid on;  
+%     legend(legendInfo);
+%   
+%     
+%     figure;
+%     %errorbar(log2(downscale_list),reflectionOptimize_list(:,1),1.96*reflection_stderr_list(:,1),'b--','LineWidth',2); hold on;
+%     plot(log2(downscale_list),reflectionOptimize_list(:,1),'b--','LineWidth',2);
+% 
+%     if strcmp(nextEvent,'yes')
+%         %errorbar(log2(downscale_list_n),reflection_list_n(:,1),1.96*reflection_stderr_list_n(:,1),'r','LineWidth',2); hold on;
+%         plot(log2(downscale_list_n),reflection_list_n(:,1),'r','LineWidth',2);
+%     end
+%     
+%     xlabel('log downsampleScale');
+%     ylabel('reflectance');
+%     title(['Scale = ' num2str(scale) ...
+%         ' Tile = ' num2str(tile) ...
+%         ' Albedo = ' num2str(albedoMax) '-' num2str(albedoMin) ...
+%         ' NoSamples = ' num2str(NoSamples)]);
+%     grid on;
+%    
+%     order = csvread('input/sigmaT_combine1_order.csv');
+%     figure;
+%     cc = jet(numOfBlock);
+%     for i = 1: numOfBlock
+%         plot(log2(downscale_list),reflectionOptimize_list(:,i+1),'LineWidth',2,'Color',cc(i,:)); hold on;
+%         legendInfo{i} = ['Block ' num2str(i)];
+%     end
+%     xlabel('log downsampleScale');
+%     ylabel('reflectance');
+%     title(['Scale = ' num2str(scale) ...
+%         ' Tile = ' num2str(tile) ...
+%         ' Albedo = ' num2str(albedoMax) '-' num2str(albedoMin) ...
+%         ' NoSamples = ' num2str(NoSamples)]);
+%     grid on;  
+%     legend(legendInfo);   
+%     
+%     figure;
+%     plot(log2(downscale_list),albedo_k_list,'*-','LineWidth',2);
+%     xlabel('log downsampleScale');
+%     ylabel('albedo');
+%     title(['Scale = ' num2str(scale) ...
+%         ' Tile = ' num2str(tile) ...
+%         ' Albedo_k = ' num2str(albedoMax) '-' num2str(albedoMin) ...
+%         ' NoSamples = ' num2str(NoSamples)]);
+%     grid on;
     
 end
