@@ -1,4 +1,4 @@
-clear; close all; clc
+ clear; close all; clc
 
 %%
 filename_list{1} = 'input/sigmaT_binaryRand.csv';
@@ -23,13 +23,13 @@ for k = 1:length(filename_list)
 
     %  
     scale = 100;
-    tile = 20;
+    tile = 160;
     downScale = 9;
     NoSamples = 1000000;
     receiptorSize = 'MAX';
     optimazation = 'no';
     nextEvent = 'no';
-    numOfBlock = 20;
+    numOfBlock = tile;
     
     albedoMax = 0.95;
     albedoMin = 0.95;

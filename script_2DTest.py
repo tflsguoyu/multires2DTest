@@ -10,7 +10,7 @@ filename = 'input/sigmaT_binaryRand.csv';
 
 # %  
 scale = 100;
-tile = 20;
+tile = 160;
 downScale = 9;
 NoSamples = 1000000;
 receiptorSize = 'MAX';

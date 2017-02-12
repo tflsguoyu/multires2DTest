@@ -30,7 +30,7 @@ def multires2DTest(sigmaT_filename, scale, tile, max_downscale, albedo,
     for flag in range(downscaleTimes):
         print('downsample: ' + repr(flag) + '/' + repr(downscaleTimes-1));
         
-        sigmaT_d = computeDownsampledSigmaT(sigmaT, downscale_list[flag]); 
+        sigmaT_d = computeDownsampledSigmaT(sigmaT, downscale_list[flag], 'x_average'); 
         (h_resize,w_resize) = np.shape(sigmaT_d);
 #        sigmaT_d = imresize(sigmaT_d, [h_tile,w_tile], 'box');
 #        sigmaT_d_list{flag} = sigmaT_d(1:h_origin,1:w_origin);
