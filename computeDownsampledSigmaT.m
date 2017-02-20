@@ -9,7 +9,7 @@ function output = computeDownsampledSigmaT(input, scale, flag)
     
     % 4 to 1       
 %     output = imresize(input,[size(input,1) round(1/scale*size(input,2))],'bilinear');
-    output = downsample(input,scale,'x_average');
+    output = downsample(input,scale,flag);
     
     disp([num2str(size(output,1)) ' x ' num2str(size(output,2))]);
     dlmwrite('output/sigmaTDownSample.csv', output, 'delimiter', ',', 'precision', 16);

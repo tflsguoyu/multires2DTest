@@ -17,7 +17,7 @@ function [downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, ...
     for flag = 1: length(downscale_list)
         disp(['downsample: ' num2str(flag-1) '/' num2str(length(downscale_list)-1)]);
         
-        sigmaT_d = computeDownsampledSigmaT(sigmaT, downscale_list(flag),'x'); 
+        sigmaT_d = computeDownsampledSigmaT(sigmaT, downscale_list(flag),'x_average'); 
         [h_resize,w_resize] = size(sigmaT_d);
         sigmaT_d = imresize(sigmaT_d, [h_tile,w_tile], 'box');
         sigmaT_d_list{flag} = sigmaT_d(1:h_origin,1:w_origin);
