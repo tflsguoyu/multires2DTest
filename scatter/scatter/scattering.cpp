@@ -76,16 +76,16 @@ int main(int argc, char *argv[]) {
 	}
 
 	// define output reflectance
-	double reflectanceTotalTotal = 0.0;
-	Eigen::VectorXd reflectanceTotal = Eigen::VectorXd::Zero(block);
+	double reflectanceTotal = 0.0;
+	Eigen::VectorXd reflectanceBlock = Eigen::VectorXd::Zero(block);
 	Eigen::MatrixXd reflectance = Eigen::MatrixXd::Zero(nworkers, block);
 
-	double reflectanceTotalTotal2 = 0.0;
-	Eigen::VectorXd reflectanceTotal2 = Eigen::VectorXd::Zero(block);
+	double reflectanceTotal2 = 0.0;
+	Eigen::VectorXd reflectanceBlock2 = Eigen::VectorXd::Zero(block);
 	Eigen::MatrixXd reflectance2 = Eigen::MatrixXd::Zero(nworkers, block);
 
 	double reflectanceStderrTotal = 0.0;
-	Eigen::VectorXd reflectanceStderr = Eigen::VectorXd::Zero(block);
+	Eigen::VectorXd reflectanceStderrBlock = Eigen::VectorXd::Zero(block);
 
 	// define medium 
 	//Medium<2> *med;
@@ -157,33 +157,33 @@ int main(int argc, char *argv[]) {
 		if (intersectID != 0) reflectance2(tid, intersectID-1) += refl * refl;
 	}
 	 
-	reflectanceTotal = reflectance.colwise().sum();
-	reflectanceTotal = reflectanceTotal / N_Sample;
-	reflectanceTotalTotal = reflectanceTotal.sum();
+	reflectanceBlock = reflectance.colwise().sum();
+	reflectanceBlock = reflectanceBlock / N_Sample;
+	reflectanceTotal = reflectanceBlock.sum();
 
-	reflectanceTotal2 = reflectance2.colwise().sum();
-	reflectanceTotal2 = reflectanceTotal2 / N_Sample;
-	reflectanceTotalTotal2 = reflectanceTotal2.sum();
+	reflectanceBlock2 = reflectance2.colwise().sum();
+	reflectanceBlock2 = reflectanceBlock2 / N_Sample;
+	reflectanceTotal2 = reflectanceBlock2.sum();
 
 	for (i = 0; i < block; ++i)
-		reflectanceStderr[i] = sqrt(reflectanceTotal2[i] - reflectanceTotal[i] * reflectanceTotal[i]) / sqrt(N_Sample);
+		reflectanceStderrBlock[i] = sqrt(reflectanceBlock2[i] - reflectanceBlock[i] * reflectanceBlock[i]) / sqrt(N_Sample);
 	
-	reflectanceStderrTotal = sqrt(reflectanceTotalTotal2 - reflectanceTotalTotal * reflectanceTotalTotal) / sqrt(N_Sample);
+	reflectanceStderrTotal = reflectanceStderrBlock.sum();
 
 	std::ofstream outfile;
 
 	outfile.open("output/reflectance.csv");
 	outfile << std::fixed;
-	outfile << std::setprecision(15) << reflectanceTotalTotal;
+	outfile << std::setprecision(15) << reflectanceTotal;
 	for (i = 0; i < block; ++i)
-		outfile << "," << std::setprecision(15) << reflectanceTotal[i];
+		outfile << "," << std::setprecision(15) << reflectanceBlock[i];
 	outfile.close();
 
 	outfile.open("output/reflectanceStderr.csv");
 	outfile << std::fixed;
 	outfile << std::setprecision(15) << reflectanceStderrTotal;
 	for(i = 0; i < block; ++i)
-		outfile << "," << std::setprecision(15) << reflectanceStderr[i];
+		outfile << "," << std::setprecision(15) << reflectanceStderrBlock[i];
 	outfile.close();
 
 	return 0;

@@ -35,8 +35,8 @@ for iter in range(1024):
     numOfBlock = tile;
     platform = 'Windows_C';
     
-    albedoMax = 0.8;
-    albedoMin = 0.8;
+    albedoMax = 0.95;
+    albedoMin = 0.95;
     albedo = albedoMax * np.ones((1,numOfBlock));
 
     # main 
@@ -56,7 +56,7 @@ for iter in range(1024):
     # save to file 
     output = np.c_[ arr,scale,tile,NoSamples,albedoMax, \
         reflection_list[0,0],reflection_list[1,0],albedo_k_list[1] ];  
-    with open('results/binary10bit_0.80_100.csv','ab') as fd:    
+    with open('results/binary10bit_0.95_100.csv','ab') as fd:    
         np.savetxt(fd, output, delimiter=',');
 
     #

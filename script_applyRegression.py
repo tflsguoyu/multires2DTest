@@ -6,10 +6,10 @@ from multires2DTest import multires2DTest
 
 foldername = 'DeepLearning/binary10bit_0.95_100';
 
-def getOptimizedAlbedo(iter):
+def getOptimizedAlbedo(iter,albedo):
     filename = foldername + '/validation.csv';
     output = np.loadtxt(filename, delimiter=',');  
-    albedo = output[iter,1];
+    albedo = output[iter,1]*albedo;
     
     return albedo;
 
@@ -43,7 +43,7 @@ for iter in range(1024):
     numOfBlock = tile;
     platform = 'Windows_C';
     
-    albedoOptimized = getOptimizedAlbedo(iter);
+    albedoOptimized = getOptimizedAlbedo(iter,0.95);
     print('albedoOptimized'+repr(albedoOptimized));
     
     albedoMax = albedoOptimized;
@@ -65,7 +65,7 @@ for iter in range(1024):
     print('Time elapse: ' + repr(time.clock() - start) + 's');
     
     # save to file 
-    output = np.c_[ reflection_list[1,0] ];  
+    output = np.c_[ reflection_list[1,0], reflection_stderr_list[1,0] ];  
     with open(foldername+'/optimizedReflectance.csv','ab') as fd:    
         np.savetxt(fd, output, delimiter=',');
 

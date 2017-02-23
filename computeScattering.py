@@ -47,6 +47,8 @@ def computeScattering(hw_origin,hw_resize,albedo,NoSamples,receiptorSize,platfor
     
     # remove boundary block
     output_reflection[0] = sum(output_reflection[2:-1]);
+    output_reflection_stderr[0] = sum(output_reflection_stderr[2:-1]);
+                     
     
     return (output_reflection,output_reflection_stderr,output_insideVis);
     

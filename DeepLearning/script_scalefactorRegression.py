@@ -50,7 +50,7 @@ def loadData():
 # In[2]:
 def loadData2():
 
-    filename = '../results/backup/binary10bit_0.95_100.csv'
+    filename = '../results/binary10bit_0.95_100.csv'
     output = np.loadtxt(filename, delimiter=',');
     output[:,10] = np.log10(output[:,10])
     numOfTotalData = int(np.shape(output)[0])
@@ -65,7 +65,7 @@ def loadData2():
 # In[2]:
 def loadData3():
 
-    filename1 = '../results/backup/binary10bit_0.95_100.csv'
+    filename1 = '../results/binary10bit_0.95_100.csv'
     output1 = np.loadtxt(filename1, delimiter=',');
     output1[:,10] = np.log10(output1[:,10])
 
