@@ -1,15 +1,14 @@
 import numpy as np
 import time
-import matplotlib.pyplot as plt
 
 from multires2DTest import multires2DTest
 
-foldername = 'DeepLearning/binary10bit_0.95_100';
+filename_output = 'output/binary10bit_0.95_100';
+numOfTrainingData = 1024;
 
 def getOptimizedAlbedo(iter,albedo):
-    filename = foldername + '/validation.csv';
-    output = np.loadtxt(filename, delimiter=',');  
-    albedo = output[iter,1]*albedo;
+    output = np.loadtxt(filename_output+'_train'+repr(numOfTrainingData)+'_predict.csv', delimiter=',');  
+    albedo = output[iter]*albedo;
     
     return albedo;
 
@@ -39,6 +38,7 @@ for iter in range(1024):
     downScale = 2;
     NoSamples = 1000000;
     receiptorSize = 'MAX';
+    fftOnly = 'no'
     optimazation = 'no';
     numOfBlock = tile;
     platform = 'Windows_C';
@@ -60,13 +60,13 @@ for iter in range(1024):
     mean_d_list, std_d_list, reflection_list, reflection_stderr_list, \
     reflectionOptimize_list, insideVis_list, albedo_k_list) \
     = multires2DTest(filename, scale, tile, downScale, albedo, NoSamples, \
-                     receiptorSize, platform, optimazation, numOfBlock);
+                     receiptorSize, platform, optimazation, numOfBlock, fftOnly);
     
     print('Time elapse: ' + repr(time.clock() - start) + 's');
     
     # save to file 
     output = np.c_[ reflection_list[1,0], reflection_stderr_list[1,0] ];  
-    with open(foldername+'/optimizedReflectance.csv','ab') as fd:    
+    with open(filename_output+'_train'+repr(numOfTrainingData)+'_predictReflection.csv','ab') as fd:    
         np.savetxt(fd, output, delimiter=',');
 
     #

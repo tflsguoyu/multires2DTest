@@ -10,10 +10,11 @@ filename = 'input/sigmaT_binaryRand.csv';
 
 # %  
 scale = 100;
-tile = 160;
-downScale = 9;
+tile = 20 #160;
+downScale = 'MAX';
 NoSamples = 1000000;
 receiptorSize = 'MAX';
+fftOnly = 'no';
 optimazation = 'no';
 nextEvent = 'no';
 numOfBlock = 20;
@@ -29,7 +30,7 @@ start = time.clock();
 mean_d_list, std_d_list, reflection_list, reflection_stderr_list, \
 reflectionOptimize_list, insideVis_list, albedo_k_list) \
 = multires2DTest(filename, scale, tile, downScale, albedo, NoSamples, \
-                 receiptorSize, platform, optimazation, numOfBlock);
+                 receiptorSize, platform, optimazation, numOfBlock, fftOnly);
 
 print('Time elapse: ' + repr(time.clock() - start) + 's');
 
@@ -44,8 +45,7 @@ y = reflection_list[:,0];
 yerr = 1.96*reflection_stderr_list[:,0];
    
 plt.figure();    
-plt.errorbar(x,y,yerr=yerr,fmt='r--') 
-#    plt.plot(x,y,'b--');
+plt.errorbar(x,y,yerr=yerr,color='b',ecolor='r') 
 plt.xlabel('log downsampleScale');
 plt.ylabel('reflectance');
 plt.title('Scale = ' + repr(scale) + \
@@ -64,9 +64,9 @@ cc = [ cm.jet(x) for x in cc_x ]
 
 plt.figure();
 legendInfo = [];
-for i in range(1,numOfBlock+1):
-    plt.plot(x,reflection_list[:,i],color=cc[i-1]); 
-    legendInfo.append('Block ' + repr(i));
+for i in range(numOfBlock-2):
+    plt.plot(x,reflection_list[:,i+2],color=cc[i+1]); 
+    legendInfo.append('Block ' + repr(i+2));
    
 plt.xlabel('log downsampleScale');
 plt.ylabel('reflectance');
@@ -77,3 +77,19 @@ plt.title('Scale = ' + repr(scale) + \
 plt.grid(True);
 plt.legend(legendInfo);  
 plt.show()
+
+# frequency 
+plt.figure()
+legendInfo = [];
+for i in range(N):
+    fftcurve_d = fftcurve_d_list[:,:,i]
+#    plt.subplot(1,N,i+1)
+    plt.plot(fftcurve_d[1,:],fftcurve_d[0,:])
+    legendInfo.append('downsample ' + repr(i));
+plt.xlabel('window size');
+plt.ylabel('energy ratio');                     
+plt.axis('equal')
+plt.grid(True);
+plt.legend(legendInfo);  
+plt.show()
+

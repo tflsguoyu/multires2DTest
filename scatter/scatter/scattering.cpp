@@ -168,18 +168,18 @@ int main(int argc, char *argv[]) {
 	for (i = 0; i < block; ++i)
 		reflectanceStderrBlock[i] = sqrt(reflectanceBlock2[i] - reflectanceBlock[i] * reflectanceBlock[i]) / sqrt(N_Sample);
 	
-	reflectanceStderrTotal = reflectanceStderrBlock.sum();
+	reflectanceStderrTotal = sqrt(reflectanceTotal2 - reflectanceTotal * reflectanceTotal) / sqrt(N_Sample);
 
 	std::ofstream outfile;
 
-	outfile.open("output/reflectance.csv");
+	outfile.open("tmp/reflectance.csv");
 	outfile << std::fixed;
 	outfile << std::setprecision(15) << reflectanceTotal;
 	for (i = 0; i < block; ++i)
 		outfile << "," << std::setprecision(15) << reflectanceBlock[i];
 	outfile.close();
 
-	outfile.open("output/reflectanceStderr.csv");
+	outfile.open("tmp/reflectanceStderr.csv");
 	outfile << std::fixed;
 	outfile << std::setprecision(15) << reflectanceStderrTotal;
 	for(i = 0; i < block; ++i)
