@@ -11,7 +11,7 @@ filename = 'input/sigmaT_binaryRand.csv';
 # %  
 scale = 100;
 tile = 20 #160;
-downScale = 'MAX';
+downScale = range(8);
 NoSamples = 1000000;
 receiptorSize = 'MAX';
 fftOnly = 'no';

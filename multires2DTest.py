@@ -2,7 +2,7 @@ import numpy as np
 from multires2DTest_functions import loadSigmaT,scaleSigmaT,tileSigmaT,getDownscaleList,computeDownsampledSigmaT,upsample,deleteTmpFiles,computeFFT,computeScattering
 
 # In[]
-def multires2DTest(sigmaT_filename, scale, tile, max_downscale, albedo, 
+def multires2DTest(sigmaT_filename, scale, tile, downscale, albedo, 
                    NoSamples, receiptorSize, platform, optimize, numOfBlock, fftOnly):
 
     ## 
@@ -11,7 +11,7 @@ def multires2DTest(sigmaT_filename, scale, tile, max_downscale, albedo,
     sigmaT = scaleSigmaT(sigmaT, scale);
     sigmaT = tileSigmaT(sigmaT, 'x', tile);
     (h_tile,w_tile) = np.shape(sigmaT);   
-    downscale_list = getDownscaleList(sigmaT, max_downscale);
+    downscale_list = getDownscaleList(downscale);
     downscaleTimes = np.size(downscale_list);
                                      
     ## output define

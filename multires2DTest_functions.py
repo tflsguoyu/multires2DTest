@@ -40,16 +40,18 @@ def tileSigmaT(input, flag, tile):
     return output;
 
 # In[]
-def getDownscaleList(input, max_downscale):
+def getDownscaleList(downscale):
     
-    if max_downscale == 'MAX':
-        (h, w) = np.shape(input);
-        max_downscale = int(np.ceil(np.log2(max(h, w))));
-
-    output = np.zeros((max_downscale));
-    for i in range(max_downscale):
-        output[i] = pow(2,i);
-    
+#    if max_downscale == 'MAX':
+#        (h, w) = np.shape(input);
+#        max_downscale = int(np.ceil(np.log2(max(h, w))));
+#
+#    output = np.zeros((max_downscale));
+#    for i in range(max_downscale):
+#        output[i] = pow(2,i);
+    output = []
+    for i in range(len(downscale)):
+        output.append(pow(2,int(downscale[i])))
     return output;
 
 # In[]

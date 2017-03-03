@@ -37,21 +37,6 @@ def loadData(filename,numOfTrainingData):
 
 ## Load data
 # In[2]:
-def loadData2():
-
-    filename = '../results/binary10bit_0.95_100.csv'
-    output = np.loadtxt(filename, delimiter=',');
-    output[:,10] = np.log10(output[:,10])
-    numOfTotalData = int(np.shape(output)[0])
-        
-    X_train = np.c_[output[:,:11],output[:,13]] 
-        
-    Y_train = output[:,16]
-        
-    return (X_train, Y_train)
-
-## Load data
-# In[2]:
 def loadData3():
 
     filename1 = '../results/binary10bit_0.95_100.csv'
@@ -98,10 +83,25 @@ def buildModel(input_dim, output_dim, nb_nodes):
 
 ## Train the model
 # In[4]
-def trainModel(model, X_train, Y_train, nb_epoch):
+def trainModel(model, X_train, Y_train, nb_epoch, X_valid,Y_valid):
 
-    model.fit(X_train, Y_train, nb_epoch=nb_epoch, batch_size=2,verbose=1)
-    
+    history = model.fit(X_train, Y_train, nb_epoch=nb_epoch, batch_size=2,verbose=1,validation_data = (X_valid,Y_valid))
+    # Plot loss trajectory throughout training.
+    plt.figure()
+    plt.subplot(1,2,1)
+    plt.plot(history.history['loss'], label='train')
+    plt.plot(history.history['val_loss'], label='valid')
+    plt.xlabel('Epoch')
+    plt.ylabel('Cross-Entropy Loss')
+    plt.legend()
+    plt.subplot(1,2,2)
+    plt.plot(history.history['acc'], label='train')
+    plt.plot(history.history['val_acc'], label='valid')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.savefig('method1.png')
+
     return model
 
 ## predict
@@ -143,6 +143,7 @@ def showResult(Y, y, nb_nodes, nb_epoch, filename,numOfTrainingData):
               '  Err_L1:'+ format(score1,'.5f'))    
 #    plt.savefig(flag + '.png')
     plt.show()
+    
 
 ## Main
 # In[100]
@@ -165,45 +166,14 @@ except:
 print(input_dim, output_dim)
 
 nb_nodes = 200 
-nb_epoch = 20
+nb_epoch = 100
 
 model = buildModel(input_dim, output_dim, nb_nodes)
-model = trainModel(model, X_train, Y_train, nb_epoch)
+model = trainModel(model, X_train, Y_train, nb_epoch, X_all, Y_all)
 
 y_all = predict(model, X_all)
 
 showResult(Y_all,y_all, nb_nodes, nb_epoch, filename,numOfTrainingData)
-
-
-
-## Main
-# In[100]
-
-#(X_train, Y_train) = loadData2()
-#
-#input_dim = 1
-#try:
-#    input_dim = X_train.shape[1]
-#except:
-#    pass
-#    
-#output_dim = 1
-#try:
-#    output_dim = Y_train.shape[1]
-#except:
-#    pass
-#
-#print(input_dim, output_dim)
-#
-#nb_nodes = 200
-#nb_epoch = 100
-#
-#model = buildModel(input_dim, output_dim, nb_nodes)
-#model = trainModel(model, X_train, Y_train, nb_epoch)
-#
-#y_train = predict(model, X_train, Y_train)
-#
-#showResult(Y_train,y_train,'Train', nb_nodes, nb_epoch)
 
 
 
