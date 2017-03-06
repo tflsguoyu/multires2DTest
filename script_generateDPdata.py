@@ -9,15 +9,15 @@ def dec2bin(x):
 fullBits = 8;
 for iter in range(pow(2,fullBits)):
     # generate 10bits binary array
-    arr10bits = dec2bin(iter); 
-    bits = len(arr10bits);
+    arrbits = dec2bin(iter); 
+    bits = len(arrbits);
     if bits != fullBits:
         for i in range(1, fullBits-bits+1):
-            arr10bits = '0' + arr10bits;         
+            arrbits = '0' + arrbits;         
     
     arr = np.zeros((1,fullBits));
     for i in range(fullBits):
-        arr[0,i] = float(arr10bits[i]);
+        arr[0,i] = float(arrbits[i]);
 
     sigT = np.tile(arr, (fullBits, 1));
     filename = 'input/sigmaT_binary'+ repr(fullBits) +'bit.csv';
@@ -25,15 +25,15 @@ for iter in range(pow(2,fullBits)):
 
     # parameters  
     scale = 100;
-    tile = 500;
+    tile = 100;
     numOfBlock = tile;
     NoSamples = 1000000;
     platform = 'Windows_C';
     receiptorSize = 'MAX';
     
     downScale = [0,2];    
-    fftOnly = 'yes'
-    optimazation = 'no';
+    fftOnly = 'no'
+    optimazation = 'yes';
     
     albedo = 0.95
     albedoMax = albedo;
@@ -57,17 +57,18 @@ for iter in range(pow(2,fullBits)):
     print('Time elapse: ' + repr(time.clock() - start) + 's');
 
     # save to file 
-#    residualMean = np.linalg.norm(sigmaT_d_list[:,:,0] - sigmaT_d_list[:,:,1]) / sigmaT_d_list[:,:,0].size
-    residualMean = np.sum(np.abs(sigmaT_d_list[:,:,0] - sigmaT_d_list[:,:,1])) / sigmaT_d_list[:,:,0].size
+    residualMean = np.linalg.norm(sigmaT_d_list[:,:,0] - sigmaT_d_list[:,:,1]) / sigmaT_d_list[:,:,0].size
+#    residualMean = np.sum(np.abs(sigmaT_d_list[:,:,0] - sigmaT_d_list[:,:,1])) / sigmaT_d_list[:,:,0].size
                                  
     
     if fftOnly == 'no':
-        output = np.c_[ arr,scale,tile,NoSamples,albedo, \
-            reflection_list[0,0],reflection_list[1,0],albedo_k_list[1], residualMean ];  
+        output = np.c_[ np.mat(sigmaT_d_list[0,:2*fullBits,0]), np.mat(sigmaT_d_list[0,:2*fullBits,1]), \
+                       residualMean, scale, albedo, \
+                       reflection_list[0,0], reflection_list[1,0], albedo_k_list[1] ];  
         with open('output/' + filename_output + '.csv','ab') as fd:    
             np.savetxt(fd, output, delimiter=',');
 
     #   
-    output2 = np.c_[residualMean, np.mat(fftcurve_d_list[0,:,0]),np.mat(fftcurve_d_list[0,:,1]) ];  
+    output2 = np.c_[np.mat(fftcurve_d_list[0,:,0]),np.mat(fftcurve_d_list[0,:,1]) ];  
     with open('output/' + filename_output + '_freq.csv','ab') as fd:    
         np.savetxt(fd, output2, delimiter=',');

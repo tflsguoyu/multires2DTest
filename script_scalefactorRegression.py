@@ -14,10 +14,10 @@ from keras.wrappers.scikit_learn import KerasRegressor
 ## Load data
 # In[2]:
 def loadData(filename,numOfTrainingData):
-
+    
+    bits = 8
     output = np.loadtxt(filename+'.csv', delimiter=',');
-    output[:,:10] = output[:,:10] - output[:,-10:]
-    output[:,10] = np.log10(output[:,10])
+    output[:,-5] = np.log10(output[:,-5])
     numOfTotalData = int(np.shape(output)[0])
     
     shuffle = np.arange(numOfTotalData)                   
