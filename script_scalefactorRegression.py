@@ -23,48 +23,57 @@ def loadData(filename,numOfTrainingData):
     shuffle = np.arange(numOfTotalData)                   
     np.random.shuffle(shuffle)
     shuffle_train = shuffle[:numOfTrainingData]
-    shuffle_test = shuffle[numOfTrainingData:]
+    shuffle_valid = shuffle[numOfTrainingData:]
     np.savetxt(filename+'_train'+repr(numOfTrainingData)+'_trainId.csv', shuffle_train, delimiter=',');
-    np.savetxt(filename+'_train'+repr(numOfTrainingData)+'_testId.csv', shuffle_test, delimiter=',');
-       
+    np.savetxt(filename+'_train'+repr(numOfTrainingData)+'_validId.csv', shuffle_valid, delimiter=',');
+   
+    
     X_train = np.c_[output[shuffle_train,:11],output[shuffle_train,13]] 
     X_all = np.c_[output[:,:11],output[:,13]] 
     
     Y_train = output[shuffle_train,16]
     Y_all = output[:,16]
         
-    return (X_train, Y_train, X_all, Y_all)
+    return (X_train, Y_train, X_valid, Y_valid, All_train, All_valid)
 
 ## Load data
 # In[2]:
-def loadData3():
-
-    filename1 = '../results/binary10bit_0.95_100.csv'
-    output1 = np.loadtxt(filename1, delimiter=',');
-    output1[:,10] = np.log10(output1[:,10])
-
-    filename2 = '../results/backup/binary10bit_0.80_100.csv'
-    output2 = np.loadtxt(filename2, delimiter=',');
-    output2[:,10] = np.log10(output2[:,10])
-
-    filename3 = '../results/backup/binary10bit_0.65_100.csv'
-    output3 = np.loadtxt(filename3, delimiter=',');
-    output3[:,10] = np.log10(output3[:,10])
-
-    numOfTotalData = int(np.shape(output1)[0])
-    numOfTrainingData = int(numOfTotalData*2)
-    numOfTestingData = int(numOfTotalData)
-        
-    X_train1 = np.c_[output1[:,:11],output1[:,13]]
-    X_train2 = np.c_[output3[:,:11],output3[:,13]]
-    X_train = np.r_[X_train1,X_train2]
-    Y_train = np.r_[output1[:,16],output3[:,16]]
+def loadData_multi(filenames_train, filenames_valid, bits):
     
-    X_test = np.c_[output2[:,:11],output2[:,13]] 
-    Y_test = output2[:,16]
+    All_train = []
+    for i in range(len(filenames_train)):
+        filename_this = filenames_train[i]
+        if i==0:
+            All_train = np.mat(np.loadtxt(filename_this, delimiter=','))
+        else:
+            All_train = np.r_[All_train, np.mat(np.loadtxt(filename_this, delimiter=','))]        
+    All_train[:,:4*bits] = All_train[:,:4*bits] / All_train[:,-5]
+    All_train[:,-5] = np.log10(All_train[:,-5])
     
-        
-    return (X_train, Y_train, X_test, Y_test)
+    
+    All_valid = []
+    for i in range(len(filenames_valid)):
+        filename_this = filenames_valid[i]
+        if i==0:
+            All_valid = np.mat(np.loadtxt(filename_this, delimiter=','))
+        else:
+            All_valid = np.r_[All_valid, np.mat(np.loadtxt(filename_this, delimiter=','))] 
+    All_valid[:,:4*bits] = All_valid[:,:4*bits] / All_valid[:,-5]
+    All_valid[:,-5] = np.log10(All_valid[:,-5])
+    
+    num_train = np.shape(All_train)[0]
+    num_valid = np.shape(All_valid)[0]
+    
+    print('num_train',num_train)    
+    print('num_valid',num_valid)    
+    
+    X_train = np.c_[All_train[:,:1*bits],All_train[:,-5],All_train[:,-4]]
+    Y_train = All_train[:,-1]
+    
+    X_valid = np.c_[All_valid[:,:1*bits],All_valid[:,-5],All_valid[:,-4]]
+    Y_valid = All_valid[:,-1]
+            
+    return (X_train, Y_train, X_valid, Y_valid, All_train, All_valid)
 
 
 ## Build neural network model
@@ -83,24 +92,19 @@ def buildModel(input_dim, output_dim, nb_nodes):
 
 ## Train the model
 # In[4]
-def trainModel(model, X_train, Y_train, nb_epoch, X_valid,Y_valid):
+def trainModel(model, X_train, Y_train, X_valid, Y_valid, nb_epoch):
 
     history = model.fit(X_train, Y_train, nb_epoch=nb_epoch, batch_size=2,verbose=1,validation_data = (X_valid,Y_valid))
-    # Plot loss trajectory throughout training.
+    
     plt.figure()
-    plt.subplot(1,2,1)
     plt.plot(history.history['loss'], label='train')
     plt.plot(history.history['val_loss'], label='valid')
     plt.xlabel('Epoch')
     plt.ylabel('Cross-Entropy Loss')
     plt.legend()
-    plt.subplot(1,2,2)
-    plt.plot(history.history['acc'], label='train')
-    plt.plot(history.history['val_acc'], label='valid')
-    plt.xlabel('Epoch')
-    plt.ylabel('Accuracy')
-    plt.legend()
-    plt.savefig('method1.png')
+
+    model.save('output/myModel.h5')
+    model.save_weights('output/myModel_weight.h5')
 
     return model
 
@@ -115,65 +119,88 @@ def predict(model, X):
 
 ## result
 # In[6]:
-def showResult(Y, y, nb_nodes, nb_epoch, filename,numOfTrainingData):
+def saveResult(All_train, All_valid, Y_train, Y_valid, y_train, y_valid):
     
-    np.savetxt(filename+'_train'+repr(numOfTrainingData)+'_predict.csv', y, delimiter=',');
     
-    err = abs(Y-y)
+    np.savetxt('output/predict_train.csv', np.c_[All_train,y_train], delimiter=',');
+    np.savetxt('output/predict_valid.csv', np.c_[All_valid,y_valid], delimiter=',');
+
+    err_train = abs(Y_train-y_train)
+    
+    total_train = 0
+    for i in range(len(Y_train)):
+        total_train = total_train + err_train[i,0]*err_train[i,0]
+    score2_train = np.sqrt(total_train/len(Y_train))
+    print('Train L2Err: ',score2_train)
+    
+    total_train = 0
+    for i in range(len(Y_train)):
+        total_train = total_train + err_train[i,0]
+    score1_train = total_train/len(Y_train)
+    print('Train L1Err: ',score1_train)
+
+    err_valid = abs(Y_valid-y_valid)
           
-    total = 0
-    for i in range(len(Y)):
-        total = total + err[i]*err[i]
-    score2 = np.sqrt(total/len(Y))
-    print(score2)
+    total_valid = 0
+    for i in range(len(Y_valid)):
+        total_valid = total_valid + err_valid[i,0]*err_valid[i,0]
+    score2_valid = np.sqrt(total_valid/len(Y_valid))
+    print('Test L2Err: ',score2_valid)
     
-    total = 0
-    for i in range(len(Y)):
-        total = total + err[i]
-    score1 = total/len(Y)
-    print(score1)
-    
-    plt.figure()
-    bins = np.linspace(0, 0.1, 50)
-    plt.hist(err,bins)
-    plt.xlabel('err')
-    plt.ylabel('frequent')
-    plt.title(' Data:' + repr(len(Y)) + ' Node:' + repr(nb_nodes) + ' Epoch:' 
-              + repr(nb_epoch) + ' Err_L2:'+ format(score2,'.5f') + 
-              '  Err_L1:'+ format(score1,'.5f'))    
-#    plt.savefig(flag + '.png')
+    total_valid = 0
+    for i in range(len(Y_valid)):
+        total_valid = total_valid + err_valid[i,0]
+    score1_valid = total_valid/len(Y_valid)
+    print('Test L1Err: ',score1_valid)
+
+    fontSize = 10
+    plt.figure(figsize=(10,6))
+    bins = np.linspace(0, 0.5, 100)
+    plt.hist(err_valid[:,0],bins,alpha = 0.7,label='validation data')
+    plt.hist(err_train[:,0],bins,alpha = 0.7,label='training data')
+    plt.xticks(fontsize=fontSize)
+    plt.yticks(fontsize=fontSize)
+    plt.xlabel('err',fontsize=fontSize)
+    plt.ylabel('frequent',fontsize=fontSize)
+    plt.title('Training Err L2:'+ format(score2_train,'.5f') + 
+          '; Validation Err L2:'+ format(score2_valid,'.5f'),fontsize=fontSize) 
+    plt.legend(fontsize=fontSize)
+    plt.savefig('errhist.png')
     plt.show()
+
     
 
 ## Main
 # In[100]
-filename = 'output/binary10bit_0.95_100'
-numOfTrainingData = 512
-(X_train, Y_train, X_all, Y_all) = loadData(filename,numOfTrainingData)
 
-input_dim = 1
-try:
-    input_dim = X_train.shape[1]
-except:
-    pass
-    
-output_dim = 1
-try:
-    output_dim = Y_train.shape[1]
-except:
-    pass
+# Input single file:
+#filename = 'output/binary10bit_0.95_100'
+#numOfTrainingData = 512
+#(X_train, Y_train, X_all, Y_all) = loadData(filename,numOfTrainingData)
 
-print(input_dim, output_dim)
+# Input multiple files:
+filenames_train = ['output/binary8bit_0.95_100.csv','output/binary8bit_0.65_100.csv']  
+filenames_valid = ['output/binary8bit_0.8_100.csv']
+bits = 8  
+(X_train, Y_train, X_valid, Y_valid, All_train, All_valid) = loadData_multi(filenames_train, filenames_valid, bits)
 
-nb_nodes = 200 
-nb_epoch = 100
+input_dim = X_train.shape[1]
+output_dim = Y_train.shape[1]
+
+print('input_dim',input_dim)
+print('output_dim',output_dim)
+
+nb_nodes = 1024
+nb_epoch = 20
 
 model = buildModel(input_dim, output_dim, nb_nodes)
-model = trainModel(model, X_train, Y_train, nb_epoch, X_all, Y_all)
+model = trainModel(model, X_train, Y_train, X_valid, Y_valid, nb_epoch)
 
-y_all = predict(model, X_all)
+y_train = predict(model, X_train)
+y_valid = predict(model, X_valid)
 
-showResult(Y_all,y_all, nb_nodes, nb_epoch, filename,numOfTrainingData)
+
+saveResult(All_train, All_valid, Y_train, Y_valid, y_train, y_valid)
 
 
 

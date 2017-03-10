@@ -9,7 +9,7 @@ from multires2DTest import multires2DTest
 filename = 'input/sigmaT_binaryRand.csv';
 
 # %  
-scale = 100;
+scale = 1000;
 tile = 20 #160;
 downScale = range(8);
 NoSamples = 1000000;
@@ -17,7 +17,7 @@ receiptorSize = 'MAX';
 fftOnly = 'no';
 optimazation = 'no';
 nextEvent = 'no';
-numOfBlock = 20;
+numOfBlock = tile;
 platform = 'Windows_C';
 
 albedoMax = 0.95;

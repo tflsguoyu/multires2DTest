@@ -24,14 +24,14 @@ for iter in range(pow(2,fullBits)):
     np.savetxt(filename, sigT, delimiter=',');
 
     # parameters  
-    scale = 100;
+    scale = 1000;
     tile = 100;
     numOfBlock = tile;
     NoSamples = 1000000;
     platform = 'Windows_C';
     receiptorSize = 'MAX';
     
-    downScale = [0,2];    
+    downScale = [0,1];    
     fftOnly = 'no'
     optimazation = 'yes';
     
