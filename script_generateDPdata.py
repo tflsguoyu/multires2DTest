@@ -1,5 +1,6 @@
 import numpy as np
 import time
+from scipy.misc import imread
 
 from multires2DTest import multires2DTest
 
@@ -7,44 +8,64 @@ def dec2bin(x):
     return bin(x)[2:];
 
 fullBits = 8;
-for iter in range(pow(2,fullBits)):
-    # generate 10bits binary array
-    arrbits = dec2bin(iter); 
-    bits = len(arrbits);
-    if bits != fullBits:
-        for i in range(1, fullBits-bits+1):
-            arrbits = '0' + arrbits;         
-    
-    arr = np.zeros((1,fullBits));
-    for i in range(fullBits):
-        arr[0,i] = float(arrbits[i]);
+#for iter in range(pow(2,fullBits)):
+#    # generate 10bits binary array
+#    arrbits = dec2bin(iter); 
+#    bits = len(arrbits);
+#    if bits != fullBits:
+#        for i in range(1, fullBits-bits+1):
+#            arrbits = '0' + arrbits;         
+#    
+#    arr = np.zeros((1,fullBits));
+#    for i in range(fullBits):
+#        arr[0,i] = float(arrbits[i]);
+#
+#    sigT = np.tile(arr, (fullBits, 1));
+#    filename = 'input/sigmaT_binary'+ repr(fullBits) +'bit.csv';
+#    np.savetxt(filename, sigT, delimiter=',');
+cloth = 'velvet'
+totalSample = 135            
+for iter in range(totalSample):
 
-    sigT = np.tile(arr, (fullBits, 1));
-    filename = 'input/sigmaT_binary'+ repr(fullBits) +'bit.csv';
+    sigT = imread('input/' + cloth + '/output/'+'im%06d.png' % iter, mode='F')/255
+    firmBlock = np.ones(np.shape(sigT))
+    sigT = np.r_[sigT,firmBlock]
+    sigT = np.r_[sigT,firmBlock]
+    sigT = np.r_[sigT,firmBlock]
+    sigT = np.r_[sigT,firmBlock]
+    sigT = np.r_[sigT,firmBlock]
+    sigT = np.r_[sigT,firmBlock]
+    sigT = np.r_[sigT,firmBlock]
+
+
+    
+    
+    filename = 'input/sigmaT_tmp.csv';
     np.savetxt(filename, sigT, delimiter=',');
 
     # parameters  
-    scale = 1000;
+    scale = 100;
     tile = 100;
-    numOfBlock = tile;
     NoSamples = 1000000;
     platform = 'Windows_C';
     receiptorSize = 'MAX';
     
-    downScale = [0,1];    
+    downScale = [0,4];    
     fftOnly = 'no'
     optimazation = 'yes';
     
     albedo = 0.95
     albedoMax = albedo;
     albedoMin = albedo;
-    albedo_list = albedoMax * np.ones((1,numOfBlock));
+    albedo_list = albedoMax;
 
-    filename_output = 'binary'+ repr(fullBits) +'bit_' + repr(albedo) + '_' + repr(scale);
+#    filename_output = 'binary'+ repr(fullBits) +'bit_' + repr(albedo) + '_' + repr(scale);
+    filename_output = cloth + '_' + repr(albedo) + '_' + repr(scale);
     
     # main 
     print('');
-    print(repr(iter+1) + '/' + repr(2**fullBits));
+#    print(repr(iter+1) + '/' + repr(2**fullBits));
+    print(repr(iter+1) + '/' + repr(totalSample));
  
     start = time.clock();
     
@@ -52,7 +73,7 @@ for iter in range(pow(2,fullBits)):
     mean_d_list, std_d_list, reflection_list, reflection_stderr_list, \
     reflectionOptimize_list, insideVis_list, albedo_k_list) \
     = multires2DTest(filename, scale, tile, downScale, albedo_list, NoSamples, \
-                     receiptorSize, platform, optimazation, numOfBlock, fftOnly);
+                     receiptorSize, platform, optimazation, fftOnly);
     
     print('Time elapse: ' + repr(time.clock() - start) + 's');
 

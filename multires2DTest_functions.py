@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import subprocess
+from scipy.misc import imread
 
 # In[]
 def loadSigmaT(filename):
@@ -10,13 +11,11 @@ def loadSigmaT(filename):
     
     if ext == 'csv':
         output = np.loadtxt(filename, delimiter=',');  
+                           
     
-#    if strcmp(ext,'png') || strcmp(ext,'bmp')
-#        output = imread(filename);
-#        if ndims(output) == 3
-#            output = rgb2gray(output);
-#
-#        output = im2double(output); 
+    if ext == 'png':
+        output = imread(filename);
+        output = output/255; 
     
     return output
 
@@ -30,6 +29,17 @@ def scaleSigmaT(input, scale):
 
 # In[]
 def tileSigmaT(input, flag, tile):
+    
+    if flag == 'x': 
+        if tile:
+            output = np.tile(input, (1,tile));
+        else:
+            output = input;    
+        
+    return output;
+
+# In[]
+def tileAlbedo(input, flag, tile):
     
     if flag == 'x': 
         if tile:
@@ -201,7 +211,7 @@ def computeFFT(input):
     return np.c_[R_list, x_list].T;
 
 # In[]
-def computeScattering(hw_origin,hw_resize,albedo,NoSamples,receiptorSize,platform,numOfBlock):
+def computeScattering(hw_origin,hw_resize,albedo,NoSamples,receiptorSize,platform):
 
     sigmaT_d_filename = 'tmp/sigmaTDownSample.csv';
 
@@ -215,13 +225,15 @@ def computeScattering(hw_origin,hw_resize,albedo,NoSamples,receiptorSize,platfor
     albedo_filename = 'tmp/albedo.csv';
     np.savetxt(albedo_filename, albedo, delimiter=',');
 
+    [block_row,block_col] = np.shape(albedo)
+#    assert(block != numOfBlock)
     
     if platform == 'Windows_C':
     # C++ windows
         subprocess.call('scatter.exe ' + sigmaT_d_filename + ' ' + \
             repr(NoSamples) + ' ' + repr(h_sigmaT_d) + ' ' + repr(w_sigmaT_d) + ' '+ \
             repr(h_region) + ' ' + repr(w_region) + ' ' + repr(receiptorSize) + ' '+ \
-            repr(numOfBlock) + ' ' + albedo_filename, shell=True);
+            repr(block_row) + ' ' + repr(block_col) + ' ' + albedo_filename, shell=True);
 
 #    if platform == 'Windows_C_nextEvent':
 #    # C++ windows
@@ -235,7 +247,7 @@ def computeScattering(hw_origin,hw_resize,albedo,NoSamples,receiptorSize,platfor
         subprocess.call('./scatter_linux ' + sigmaT_d_filename + ' ' + \
             repr(NoSamples) + ' ' + repr(h_sigmaT_d) + ' ' + repr(w_sigmaT_d) + ' '+ \
             repr(h_region) + ' ' + repr(w_region) + ' ' + repr(receiptorSize) + ' '+ \
-            repr(numOfBlock) + ' ' + albedo_filename, shell=True);
+           repr(block_row) + ' ' + repr(block_col) + ' ' + albedo_filename, shell=True);
     
 #    if exist('output/densityMap.csv', 'file') == 2 :
 #        output_insideVis = csvread('output/densityMap.csv');

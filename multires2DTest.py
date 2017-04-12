@@ -1,23 +1,24 @@
 import numpy as np
-from multires2DTest_functions import loadSigmaT,scaleSigmaT,tileSigmaT,getDownscaleList,computeDownsampledSigmaT,upsample,deleteTmpFiles,computeFFT,computeScattering
+from multires2DTest_functions import loadSigmaT,scaleSigmaT,tileSigmaT,tileAlbedo,getDownscaleList,computeDownsampledSigmaT,upsample,deleteTmpFiles,computeFFT,computeScattering
 
 # In[]
 def multires2DTest(sigmaT_filename, scale, tile, downscale, albedo, 
-                   NoSamples, receiptorSize, platform, optimize, numOfBlock, fftOnly):
+                   NoSamples, receiptorSize, platform, optimize, fftOnly):
 
     ## 
     sigmaT = loadSigmaT(sigmaT_filename);
     (h_origin,w_origin) = np.shape(sigmaT);
     sigmaT = scaleSigmaT(sigmaT, scale);
     sigmaT = tileSigmaT(sigmaT, 'x', tile);
+    albedo = tileAlbedo(albedo, 'x', tile)
     (h_tile,w_tile) = np.shape(sigmaT);   
     downscale_list = getDownscaleList(downscale);
     downscaleTimes = np.size(downscale_list);
                                      
     ## output define
-    reflection_list = np.zeros((downscaleTimes, numOfBlock+1));
-    reflection_stderr_list = np.zeros((downscaleTimes, numOfBlock+1));
-    reflectionOptimize_list = np.zeros((downscaleTimes, numOfBlock+1));
+    reflection_list = np.zeros((downscaleTimes, np.shape(albedo)[1]+1));
+    reflection_stderr_list = np.zeros((downscaleTimes, np.shape(albedo)[1]+1));
+    reflectionOptimize_list = np.zeros((downscaleTimes, np.shape(albedo)[1]+1));
     albedo_k_list = np.zeros(downscaleTimes);
     fftcurve_d_list = np.zeros((2,101,downscaleTimes));
     sigmaT_d_list = np.zeros((h_tile,w_tile,downscaleTimes));
@@ -49,14 +50,14 @@ def multires2DTest(sigmaT_filename, scale, tile, downscale, albedo,
             albedo_k_tmp = 0.0;
             err = 1;
             iter = 0;
-            while abs(err) > 0.0001 and (albedo_k_end - albedo_k_start) > 0.00001:
+            while abs(err) > 0.00001 and (albedo_k_end - albedo_k_start) > 0.00001:
                 iter = iter + 1;
                 
                 albedo_k_tmp = (albedo_k_start + albedo_k_end) / 2;
                 
                 [reflection,reflection_stderr,insideVis] = \
                     computeScattering((h_tile,w_tile),(h_resize,w_resize),\
-                    albedo_k_tmp*albedo,NoSamples,receiptorSize,platform,numOfBlock);
+                    albedo_k_tmp*albedo,NoSamples,receiptorSize,platform);
                       
     
                 if iter == 1:

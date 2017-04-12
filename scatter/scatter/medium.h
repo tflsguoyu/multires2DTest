@@ -163,8 +163,8 @@ public:
 protected:
 	double getSigT(const VectorType &p) const {
 		
-		int r = static_cast<int>(std::ceil((1.0 - p[1] / pMax[1]) * sigT.rows()));
-		int c = static_cast<int>(std::ceil(p[0] / pMax[0] * sigT.cols()));
+		int r = static_cast<int>(std::ceil((pMax[1]-p[1]) / (pMax[1]-pMin[1]) * sigT.rows()));
+		int c = static_cast<int>(std::ceil(p[0] / (pMax[0]-pMin[0]) * sigT.cols()));
 		
 		if (r < 0) r = 0;
 		else if (r >= sigT.rows()) r = static_cast<int>(sigT.rows()) - 1;
@@ -191,28 +191,30 @@ public:
 	using Parent::pMin;
 	using Parent::pMax;
 
-	multiHeterogeneousMedium(const VectorType &_pMin, const VectorType &_pMax, const Eigen::MatrixXd &_sigT, const Eigen::VectorXd &_albedo, const int &_numOfBlock)
-		: HeterogeneousMedium<ndim>(_pMin, _pMax, _sigT, 0.0), albedoList(_albedo), numOfBlock(_numOfBlock) {}
+	multiHeterogeneousMedium(const VectorType &_pMin, const VectorType &_pMax, const Eigen::MatrixXd &_sigT, const Eigen::MatrixXd &_albedo)
+		: HeterogeneousMedium<ndim>(_pMin, _pMax, _sigT, 0.0), albedoMatrix(_albedo) {}
 
 	bool intersectReceiptor(const VectorType &p, const VectorType &d, Sampler &sampler, const double &receiptorWidth, int &intersectID) const
 	{
 		if (d[1] > 0) {
 			double intersectP_x = p[0] + (pMax[1] - p[1]) * d[0] / d[1];
 			if (intersectP_x > (pMax[0] - receiptorWidth) / 2 && intersectP_x < (pMax[0] + receiptorWidth) / 2) {
-				intersectID = static_cast<int>(std::ceil(intersectP_x / ((pMax[0] - pMin[0]) / numOfBlock)));
+				intersectID = static_cast<int>(std::ceil(intersectP_x / ((pMax[0] - pMin[0]) / albedoMatrix.cols())));
 				return true;
 			}
 		}
 		return false;
 	}
 
+	// TO DO:
 	double getAlbedo(const VectorType &p, const VectorType &d, Sampler &sampler) const
 	{
-		int albedoID = static_cast<int>(std::ceil(p[0] / ((pMax[0] - pMin[0]) / numOfBlock)));
-		return albedoList[albedoID-1];
+		int albedoID_col = static_cast<int>(std::ceil(p[0] / (pMax[0]-pMin[0]) * albedoMatrix.cols()));
+		int albedoID_row = static_cast<int>(std::ceil((pMax[1]-p[1]) / (pMax[1] - pMin[1]) * albedoMatrix.rows()));
+
+		return albedoMatrix(albedoID_row-1, albedoID_col-1);
 	}
 
 protected:
-	int numOfBlock;
-	Eigen::VectorXd albedoList;
+	Eigen::MatrixXd albedoMatrix;
 };

@@ -10,19 +10,18 @@ filename = 'input/sigmaT_binaryRand.csv';
 
 # %  
 scale = 1000;
-tile = 20 #160;
+tile = 20;
 downScale = range(8);
 NoSamples = 1000000;
 receiptorSize = 'MAX';
 fftOnly = 'no';
 optimazation = 'no';
 nextEvent = 'no';
-numOfBlock = tile;
 platform = 'Windows_C';
 
 albedoMax = 0.95;
 albedoMin = 0.95;
-albedo = albedoMax * np.ones((1,numOfBlock));
+albedo = albedoMax
  
 start = time.clock();
                                                     
@@ -30,7 +29,7 @@ start = time.clock();
 mean_d_list, std_d_list, reflection_list, reflection_stderr_list, \
 reflectionOptimize_list, insideVis_list, albedo_k_list) \
 = multires2DTest(filename, scale, tile, downScale, albedo, NoSamples, \
-                 receiptorSize, platform, optimazation, numOfBlock, fftOnly);
+                 receiptorSize, platform, optimazation, fftOnly);
 
 print('Time elapse: ' + repr(time.clock() - start) + 's');
 
@@ -59,12 +58,12 @@ plt.show()
 # refl each
 start = 0.0
 stop = 1.0
-cc_x = np.linspace(start, stop, numOfBlock) 
+cc_x = np.linspace(start, stop, tile) 
 cc = [ cm.jet(x) for x in cc_x ]
 
 plt.figure();
 legendInfo = [];
-for i in range(numOfBlock-2):
+for i in range(tile-2):
     plt.plot(x,reflection_list[:,i+2],color=cc[i+1]); 
     legendInfo.append('Block ' + repr(i+2));
    

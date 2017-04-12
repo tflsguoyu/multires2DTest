@@ -1,6 +1,6 @@
 ﻿  scattering.cpp
   Generating code
-  All 957 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 947 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   scatter.vcxproj -> D:\gyDocuments\multires2DTest\scatter\\x64\Release\scatter.exe
   scatter.vcxproj -> D:\gyDocuments\multires2DTest\scatter\\x64\Release\scatter.pdb (Full PDB)

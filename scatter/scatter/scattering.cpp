@@ -42,21 +42,22 @@ int main(int argc, char *argv[]) {
 	const double y = std::atof(argv[5]);
 	const double x = std::atof(argv[6]);
 	const double receiptorSize = std::atof(argv[7]);
-	const int block = std::atoi(argv[8]);
-	std::ifstream fileAlbedo(argv[9]);
+	const int block_row = std::atoi(argv[8]);
+	const int block_col = std::atoi(argv[9]);
+	std::ifstream fileAlbedo(argv[10]);
 
 	// read albedo list
-	Eigen::VectorXd albedoList(block);
-	for (i = 0; i < 1; ++i) {
+	Eigen::MatrixXd albedoList(block_row, block_col);
+	for (i = 0; i < block_row; ++i) {
 		std::string line;
 		std::getline(fileAlbedo, line);
 
 		std::stringstream iss(line);
-		for (j = 0; j < block; ++j) {
+		for (j = 0; j < block_col; ++j) {
 			std::string val;
 			std::getline(iss, val, ',');
 			std::stringstream convertor(val);
-			convertor >> albedoList[j];
+			convertor >> albedoList(i,j);
 		}
 	}
 	
@@ -77,15 +78,15 @@ int main(int argc, char *argv[]) {
 
 	// define output reflectance
 	double reflectanceTotal = 0.0;
-	Eigen::VectorXd reflectanceBlock = Eigen::VectorXd::Zero(block);
-	Eigen::MatrixXd reflectance = Eigen::MatrixXd::Zero(nworkers, block);
+	Eigen::VectorXd reflectanceBlock = Eigen::VectorXd::Zero(block_col);
+	Eigen::MatrixXd reflectance = Eigen::MatrixXd::Zero(nworkers, block_col);
 
 	double reflectanceTotal2 = 0.0;
-	Eigen::VectorXd reflectanceBlock2 = Eigen::VectorXd::Zero(block);
-	Eigen::MatrixXd reflectance2 = Eigen::MatrixXd::Zero(nworkers, block);
+	Eigen::VectorXd reflectanceBlock2 = Eigen::VectorXd::Zero(block_col);
+	Eigen::MatrixXd reflectance2 = Eigen::MatrixXd::Zero(nworkers, block_col);
 
 	double reflectanceStderrTotal = 0.0;
-	Eigen::VectorXd reflectanceStderrBlock = Eigen::VectorXd::Zero(block);
+	Eigen::VectorXd reflectanceStderrBlock = Eigen::VectorXd::Zero(block_col);
 
 	// define medium 
 	//Medium<2> *med;
@@ -96,7 +97,7 @@ int main(int argc, char *argv[]) {
 	//	med = new HeterogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT, albedo);
 	//}
 	multiHeterogeneousMedium<2> *med;
-	med = new multiHeterogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT, albedoList, block);
+	med = new multiHeterogeneousMedium<2>(Eigen::Vector2d(0.0, 0.0), Eigen::Vector2d(x, y), sigT, albedoList);
 
 	// core computing
 #pragma omp parallel for //schedule(dynamic, 1)
@@ -165,7 +166,7 @@ int main(int argc, char *argv[]) {
 	reflectanceBlock2 = reflectanceBlock2 / N_Sample;
 	reflectanceTotal2 = reflectanceBlock2.sum();
 
-	for (i = 0; i < block; ++i)
+	for (i = 0; i < block_col; ++i)
 		reflectanceStderrBlock[i] = sqrt(reflectanceBlock2[i] - reflectanceBlock[i] * reflectanceBlock[i]) / sqrt(N_Sample);
 	
 	reflectanceStderrTotal = sqrt(reflectanceTotal2 - reflectanceTotal * reflectanceTotal) / sqrt(N_Sample);
@@ -175,14 +176,14 @@ int main(int argc, char *argv[]) {
 	outfile.open("tmp/reflectance.csv");
 	outfile << std::fixed;
 	outfile << std::setprecision(15) << reflectanceTotal;
-	for (i = 0; i < block; ++i)
+	for (i = 0; i < block_col; ++i)
 		outfile << "," << std::setprecision(15) << reflectanceBlock[i];
 	outfile.close();
 
 	outfile.open("tmp/reflectanceStderr.csv");
 	outfile << std::fixed;
 	outfile << std::setprecision(15) << reflectanceStderrTotal;
-	for(i = 0; i < block; ++i)
+	for(i = 0; i < block_col; ++i)
 		outfile << "," << std::setprecision(15) << reflectanceStderrBlock[i];
 	outfile.close();
 
