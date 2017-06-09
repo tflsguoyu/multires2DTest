@@ -2,7 +2,7 @@ import numpy as np
 import time
 from scipy.misc import imread
 
-from multires2DTest import multires2DTest
+from multires2DRendering import multires2DRendering
 
 def dec2bin(x):
     return bin(x)[2:];
@@ -29,15 +29,15 @@ def dec2bin(x):
 def generateData(totalSample, addLayer, densityMean):
     
     fullBits = 8
-    cloth = 'velvet'
+    cloth = 'felt'
 
     for iter in range(totalSample):
     
 #        sigT = imread('input/' + cloth + '/output' + repr(addLayer) + repr(addLayer) + '/im%06d.png' % iter, mode='F')/255
 #        densityMean = np.sum(sigT)/32/15/32 
         
-        sigT = imread('input/' + cloth + '/output_deeplearning' + '/im%06d.png' % iter, mode='F')/255
-        firmBlock = np.ones((32*addLayer+16,np.shape(sigT)[1]))
+        sigT = imread('input/' + cloth + '/' + cloth + '_deeplearning' + '/im%06d.png' % iter, mode='F')/255
+        firmBlock = np.ones((16*addLayer,np.shape(sigT)[1]))
         sigT = np.r_[sigT,firmBlock]
         
         densityMean = np.sum(sigT)/32/32
@@ -65,7 +65,7 @@ def generateData(totalSample, addLayer, densityMean):
         albedo_list = albedoMax;
     
     #    filename_output = 'binary'+ repr(fullBits) +'bit_' + repr(albedo) + '_' + repr(scale);
-        filename_output = cloth + '_' + repr(albedo) + '_' + repr(scale) + '_down04_' + repr(addLayer+0.5);
+        filename_output = cloth + '_' + repr(albedo) + '_' + repr(scale) + '_down04_' + repr(addLayer);
 #        filename_output = cloth + repr(addLayer) + repr(addLayer) + '_' + repr(albedo) + '_' + repr(scale) + '_down04';
         
         # main 
@@ -78,7 +78,7 @@ def generateData(totalSample, addLayer, densityMean):
         (downscale_list, sigmaT_d_list, logfft_d_list, fftcurve_d_list, \
         mean_d_list, std_d_list, reflection_list, reflection_stderr_list, \
         reflectionOptimize_list, insideVis_list, albedo_k_list) \
-        = multires2DTest(filename, scale, tile, downScale, albedo_list, NoSamples, \
+        = multires2DRendering(filename, scale, tile, downScale, albedo_list, NoSamples, \
                          receiptorSize, platform, optimazation, fftOnly);
         
         print('Time elapse: ' + repr(time.clock() - start) + 's');
@@ -102,5 +102,5 @@ def generateData(totalSample, addLayer, densityMean):
                       
 # In[]:
 for i in range(9):
-    N = 608
+    N = 609
     generateData(N,i,0)

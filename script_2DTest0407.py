@@ -6,7 +6,8 @@ from matplotlib import cm
 from multires2DTest import multires2DTest
 
 
-filename = 'input/velvet/velvet9.png'
+filename = 'input/velvet/velvet1.png'
+#filename = 'input/gabardine/gabardine1.png'
 #filename = 'input/wool/wool.png'
 #
 #output = np.loadtxt('output/velvet99_0.95_100_down04/data'+'.csv', delimiter=',')
@@ -17,7 +18,7 @@ albedoScale = output
 # %  
 scale = 100;
 tile = 100;
-downScale = [4];
+downScale = [0,4];
 NoSamples = 10000000;
 receiptorSize = 'MAX';
 fftOnly = 'no';
@@ -26,8 +27,8 @@ platform = 'Windows_C';
 
 albedoMax = 0.95;
 albedoMin = 0.95;
-#albedo = albedoMax * np.ones((1,15))
-albedo = albedoMax * albedoScale.reshape(9,15)
+albedo = albedoMax * np.ones((1,15))
+#albedo = albedoMax * albedoScale.reshape(2,15)
 #albedo = albedoMax * np.ones((4,21))
 #albedo = albedoMax * albedoScale.reshape(4,21)
 
